@@ -23,4 +23,100 @@ public class Usuario {
     @ManyToOne
     @JoinColumn(name="idRol")
     public Rol rol;
+
+    public Long getIdUsuario() {
+        return idUsuario;
+    }
+
+    public void setIdUsuario(Long idUsuario) {
+        this.idUsuario = idUsuario;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getApellido() {
+        return apellido;
+    }
+
+    public void setApellido(String apellido) {
+        this.apellido = apellido;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public Boolean getEstado() {
+        return estado;
+    }
+
+    public void setEstado(Boolean estado) {
+        this.estado = estado;
+    }
+
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public Sucursal getSucursal() {
+        return sucursal;
+    }
+
+    public void setSucursal(Sucursal sucursal) {
+        this.sucursal = sucursal;
+    }
+
+    public Rol getRol() {
+        return rol;
+    }
+
+    public void setRol(Rol rol) {
+        this.rol = rol;
+    }
+
+    public Usuario(Long idUsuario, String nombre, String apellido, String telefono, String username, String password, Boolean estado, LocalDateTime fechaCreacion, Sucursal sucursal, Rol rol) {
+        this.idUsuario = idUsuario;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.telefono = telefono;
+        this.username = username;
+        this.password = password;
+        this.estado = estado;
+        this.fechaCreacion = fechaCreacion;
+        this.sucursal = sucursal;
+        this.rol = rol;
+    }
+
+    public Usuario() {
+    }
 }

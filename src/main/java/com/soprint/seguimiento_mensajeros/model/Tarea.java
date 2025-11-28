@@ -82,4 +82,171 @@ public class Tarea {
     @Column(name = "codigo", length = 4, nullable = false)
     private String codigo;
 
+    public Long getIdTarea() {
+        return idTarea;
+    }
+
+    public void setIdTarea(Long idTarea) {
+        this.idTarea = idTarea;
+    }
+
+    public TipoOperacion getTipoOperacion() {
+        return tipoOperacion;
+    }
+
+    public void setTipoOperacion(TipoOperacion tipoOperacion) {
+        this.tipoOperacion = tipoOperacion;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public EstadoTarea getEstadoTarea() {
+        return estadoTarea;
+    }
+
+    public void setEstadoTarea(EstadoTarea estadoTarea) {
+        this.estadoTarea = estadoTarea;
+    }
+
+    public Usuario getAsesorCrea() {
+        return asesorCrea;
+    }
+
+    public void setAsesorCrea(Usuario asesorCrea) {
+        this.asesorCrea = asesorCrea;
+    }
+
+    public Usuario getMensajeroAsignado() {
+        return mensajeroAsignado;
+    }
+
+    public void setMensajeroAsignado(Usuario mensajeroAsignado) {
+        this.mensajeroAsignado = mensajeroAsignado;
+    }
+
+    public Usuario getSupervisorAsigna() {
+        return supervisorAsigna;
+    }
+
+    public void setSupervisorAsigna(Usuario supervisorAsigna) {
+        this.supervisorAsigna = supervisorAsigna;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public LocalDateTime getFechaLimite() {
+        return fechaLimite;
+    }
+
+    public void setFechaLimite(LocalDateTime fechaLimite) {
+        this.fechaLimite = fechaLimite;
+    }
+
+    public LocalDateTime getFechaFin() {
+        return fechaFin;
+    }
+
+    public void setFechaFin(LocalDateTime fechaFin) {
+        this.fechaFin = fechaFin;
+    }
+
+    public Long getTiempoTotal() {
+        return tiempoTotal;
+    }
+
+    public void setTiempoTotal(Long tiempoTotal) {
+        this.tiempoTotal = tiempoTotal;
+    }
+
+    public String getComentario() {
+        return comentario;
+    }
+
+    public void setComentario(String comentario) {
+        this.comentario = comentario;
+    }
+
+    public String getObservacion() {
+        return observacion;
+    }
+
+    public void setObservacion(String observacion) {
+        this.observacion = observacion;
+    }
+
+    public String getProceso() {
+        return proceso;
+    }
+
+    public void setProceso(String proceso) {
+        this.proceso = proceso;
+    }
+
+    public LocalDateTime getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public void setFechaInicio(LocalDateTime fechaInicio) {
+        this.fechaInicio = fechaInicio;
+    }
+
+    public @Pattern(regexp = "\\d{4}", message = "El código debe tener exactamente 4 dígitos numéricos") String getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(@Pattern(regexp = "\\d{4}", message = "El código debe tener exactamente 4 dígitos numéricos") String codigo) {
+        this.codigo = codigo;
+    }
+
+    public Tarea(Long idTarea, TipoOperacion tipoOperacion, Categoria categoria, Cliente cliente, EstadoTarea estadoTarea, Usuario asesorCrea, Usuario mensajeroAsignado, Usuario supervisorAsigna, String nombre, LocalDateTime fechaCreacion, LocalDateTime fechaLimite, LocalDateTime fechaFin, Long tiempoTotal, String comentario, String observacion, String proceso, LocalDateTime fechaInicio, String codigo) {
+        this.idTarea = idTarea;
+        this.tipoOperacion = tipoOperacion;
+        this.categoria = categoria;
+        this.cliente = cliente;
+        this.estadoTarea = estadoTarea;
+        this.asesorCrea = asesorCrea;
+        this.mensajeroAsignado = mensajeroAsignado;
+        this.supervisorAsigna = supervisorAsigna;
+        this.nombre = nombre;
+        this.fechaCreacion = fechaCreacion;
+        this.fechaLimite = fechaLimite;
+        this.fechaFin = fechaFin;
+        this.tiempoTotal = tiempoTotal;
+        this.comentario = comentario;
+        this.observacion = observacion;
+        this.proceso = proceso;
+        this.fechaInicio = fechaInicio;
+        this.codigo = codigo;
+    }
+
+    public Tarea() {
+    }
 }
