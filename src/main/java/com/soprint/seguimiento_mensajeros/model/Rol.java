@@ -1,5 +1,6 @@
 package com.soprint.seguimiento_mensajeros.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -11,6 +12,7 @@ public class Rol {
     public Long id_rol;
     public String nombre;
     @OneToMany(mappedBy = "rol")
+    @JsonIgnore
     public List<Usuario> listUsuarios;
 
     public Long getId_rol() {

@@ -1,5 +1,6 @@
 package com.soprint.seguimiento_mensajeros.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ public class Sucursal {
     public String ciudad;
     public String telefono;
     @OneToMany(mappedBy = "sucursal")
+    @JsonIgnore
     public List<Usuario> listUsuarios;
 
     public Long getIdSucursal() {
