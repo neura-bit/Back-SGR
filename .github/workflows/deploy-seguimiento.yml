@@ -1,0 +1,107 @@
+name: Deploy Seguimiento Mensajeros to Hostinger
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: seguim-deploy
+  cancel-in-progress: true
+
+env:
+  IMAGE_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_TAG: ${{ github.sha }}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Temurin JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: "maven"
+
+      - name: Build JAR (skip tests)
+        run: mvn -B -DskipTests package
+
+      - name: Compute image repo (lowercase for GHCR)
+        id: vars
+        run: |
+          REPO_LC=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          echo "repo_lc=$REPO_LC" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.IMAGE_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & Push image to GHCR
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: |
+            JAR_FILE=target/seguimiento-mensajeros-0.0.1-SNAPSHOT.jar
+          tags: |
+            ${{ env.IMAGE_REGISTRY }}/${{ steps.vars.outputs.repo_lc }}:${{ env.IMAGE_TAG }}
+            ${{ env.IMAGE_REGISTRY }}/${{ steps.vars.outputs.repo_lc }}:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Deploy to Hostinger via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          password: ${{ secrets.HOSTINGER_PASSWORD }}
+          port: ${{ secrets.HOSTINGER_SSH_PORT }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            echo "==> Entrando a carpeta de despliegue"
+            mkdir -p "$HOME/BackSeguimientoMensajeros"
+            cd "$HOME/BackSeguimientoMensajeros"
+
+            echo "==> Reescribiendo archivo .env"
+            cat > .env << 'EOF'
+            API_HOST_SEGUIM=${{ secrets.API_HOST_SEGUIM }}
+            TRAEFIK_RESOLVER=${{ secrets.TRAEFIK_RESOLVER }}
+            SPRING_DATASOURCE_URL=${{ secrets.SPRING_DATASOURCE_URL }}
+            SPRING_DATASOURCE_USERNAME=${{ secrets.SPRING_DATASOURCE_USERNAME }}
+            SPRING_DATASOURCE_PASSWORD=${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+            EOF
+  
+            echo "==> Verificando red n8n_evoapi (Traefik)"
+            docker network inspect n8n_evoapi >/dev/null 2>&1 || docker network create n8n_evoapi
+            
+            echo "==> Haciendo pull de la última imagen"
+            docker compose pull seguimiento-mensajeros || true
+            
+            echo "==> Levantando/actualizando servicio seguimiento-mensajeros"
+            docker compose up -d seguimiento-mensajeros
+            
+            echo "==> Limpiando imágenes antiguas"
+            docker image prune -f >/dev/null 2>&1 || true
+            
+            echo "✅ Deploy Seguimiento Mensajeros completado"
