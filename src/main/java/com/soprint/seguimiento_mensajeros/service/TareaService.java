@@ -33,8 +33,8 @@ public class TareaService implements ITareaService {
 
     @Override
     public Tarea create(Tarea tarea) {
-        tarea.setIdTarea(null);                  // que el ID lo genere la BD
-        tarea.setFechaCreacion(LocalDateTime.now());  // fecha de creación automática
+        tarea.setIdTarea(null); // que el ID lo genere la BD
+        tarea.setFechaCreacion(LocalDateTime.now()); // fecha de creación automática
 
         // aquí podrías poner un estado inicial por defecto si quieres
         // tarea.setEstadoTarea(estadoInicial);
@@ -76,5 +76,37 @@ public class TareaService implements ITareaService {
             throw new IllegalArgumentException("Tarea no encontrada con id: " + id);
         }
         tareaRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Tarea> findByMensajero(Long idMensajero) {
+        return tareaRepository.findByMensajeroAsignadoIdUsuario(idMensajero);
+    }
+
+    @Override
+    public Tarea asignarMensajero(Long idTarea, Long idMensajero) {
+        Tarea tarea = tareaRepository.findById(idTarea)
+                .orElseThrow(() -> new IllegalArgumentException("Tarea no encontrada con id: " + idTarea));
+
+        // Create a reference to the Usuario without loading the full entity
+        com.soprint.seguimiento_mensajeros.model.Usuario mensajero = new com.soprint.seguimiento_mensajeros.model.Usuario();
+        mensajero.setIdUsuario(idMensajero);
+
+        tarea.setMensajeroAsignado(mensajero);
+        return tareaRepository.save(tarea);
+    }
+
+    @Override
+    public Tarea reasignarMensajero(Long idTarea, Long idMensajero) {
+        Tarea tarea = tareaRepository.findById(idTarea)
+                .orElseThrow(() -> new IllegalArgumentException("Tarea no encontrada con id: " + idTarea));
+
+        // Create a reference to the Usuario without loading the full entity
+        com.soprint.seguimiento_mensajeros.model.Usuario mensajero = new com.soprint.seguimiento_mensajeros.model.Usuario();
+        mensajero.setIdUsuario(idMensajero);
+
+        tarea.setMensajeroAsignado(mensajero);
+        return tareaRepository.save(tarea);
     }
 }

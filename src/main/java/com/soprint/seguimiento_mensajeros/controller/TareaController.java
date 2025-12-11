@@ -1,21 +1,28 @@
 package com.soprint.seguimiento_mensajeros.controller;
 
 import com.soprint.seguimiento_mensajeros.model.Tarea;
+import com.soprint.seguimiento_mensajeros.model.Usuario;
+import com.soprint.seguimiento_mensajeros.repository.UsuarioRepository;
 import com.soprint.seguimiento_mensajeros.service.ITareaService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/tareas")
 public class TareaController {
 
     private final ITareaService tareaService;
+    private final UsuarioRepository usuarioRepository;
 
-    public TareaController(ITareaService tareaService) {
+    public TareaController(ITareaService tareaService, UsuarioRepository usuarioRepository) {
         this.tareaService = tareaService;
+        this.usuarioRepository = usuarioRepository;
     }
 
     // GET /api/tareas
@@ -44,7 +51,7 @@ public class TareaController {
     // PUT /api/tareas/{id}
     @PutMapping("/{id}")
     public ResponseEntity<Tarea> actualizar(@PathVariable Long id,
-                                            @RequestBody Tarea tarea) {
+            @RequestBody Tarea tarea) {
         try {
             Tarea actualizada = tareaService.update(id, tarea);
             return ResponseEntity.ok(actualizada);
@@ -59,6 +66,57 @@ public class TareaController {
         try {
             tareaService.delete(id);
             return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // ===== ROLE-SPECIFIC ENDPOINTS =====
+
+    // GET /api/tareas/mis-tareas - MENSAJERO gets their assigned tasks
+    @GetMapping("/mis-tareas")
+    @PreAuthorize("hasAnyRole('MENSAJERO', 'ADMIN')")
+    public ResponseEntity<List<Tarea>> misTareas(Authentication authentication) {
+        String username = authentication.getName();
+        Usuario usuario = usuarioRepository.findByUsername(username).orElse(null);
+        if (usuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(tareaService.findByMensajero(usuario.getIdUsuario()));
+    }
+
+    // PUT /api/tareas/{id}/asignar - ASESOR assigns a task to a messenger
+    @PutMapping("/{id}/asignar")
+    @PreAuthorize("hasAnyRole('ASESOR', 'ADMIN')")
+    public ResponseEntity<Tarea> asignarMensajero(
+            @PathVariable Long id,
+            @RequestBody Map<String, Long> body) {
+        try {
+            Long idMensajero = body.get("idMensajero");
+            if (idMensajero == null) {
+                return ResponseEntity.badRequest().build();
+            }
+            Tarea actualizada = tareaService.asignarMensajero(id, idMensajero);
+            return ResponseEntity.ok(actualizada);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // PUT /api/tareas/{id}/reasignar-mensajero - SUPERVISOR reassigns a task to a
+    // different messenger
+    @PutMapping("/{id}/reasignar-mensajero")
+    @PreAuthorize("hasAnyRole('SUPERVISOR', 'ADMIN')")
+    public ResponseEntity<Tarea> reasignarMensajero(
+            @PathVariable Long id,
+            @RequestBody Map<String, Long> body) {
+        try {
+            Long idMensajero = body.get("idMensajero");
+            if (idMensajero == null) {
+                return ResponseEntity.badRequest().build();
+            }
+            Tarea actualizada = tareaService.reasignarMensajero(id, idMensajero);
+            return ResponseEntity.ok(actualizada);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
