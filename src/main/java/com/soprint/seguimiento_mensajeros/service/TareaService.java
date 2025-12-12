@@ -36,10 +36,37 @@ public class TareaService implements ITareaService {
         tarea.setIdTarea(null); // que el ID lo genere la BD
         tarea.setFechaCreacion(LocalDateTime.now()); // fecha de creación automática
 
+        // Autogenerar código de 4 dígitos
+        String nuevoCodigo = generarNuevoCodigo();
+        tarea.setCodigo(nuevoCodigo);
+
         // aquí podrías poner un estado inicial por defecto si quieres
         // tarea.setEstadoTarea(estadoInicial);
 
         return tareaRepository.save(tarea);
+    }
+
+    /**
+     * Genera un nuevo código de 4 dígitos para la tarea.
+     * Busca el último código existente y le suma 1.
+     * Si no hay tareas, empieza desde "0001".
+     * El código máximo es "9999".
+     */
+    private String generarNuevoCodigo() {
+        return tareaRepository.findTopByOrderByCodigoDesc()
+                .map(ultimaTarea -> {
+                    String ultimoCodigo = ultimaTarea.getCodigo();
+                    int numero = Integer.parseInt(ultimoCodigo);
+                    int nuevoNumero = numero + 1;
+
+                    // Si supera 9999, reiniciar a 0001 (o lanzar excepción según necesidad)
+                    if (nuevoNumero > 9999) {
+                        nuevoNumero = 1;
+                    }
+
+                    return String.format("%04d", nuevoNumero);
+                })
+                .orElse("0001"); // Si no hay tareas, empezar desde 0001
     }
 
     @Override

@@ -65,10 +65,10 @@ public class SecurityConfig {
                         .hasAnyRole("SUPERVISOR", "ADMIN")
 
                         // ADMIN - Full access to all endpoints
-                        .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers("/api/usuarios/**").hasAnyRole("ADMIN", "ASESOR")
                         .requestMatchers("/api/roles/**").hasRole("ADMIN")
                         .requestMatchers("/api/sucursales/**").hasRole("ADMIN")
-                        .requestMatchers("/api/categorias/**").hasRole("ADMIN")
+                        .requestMatchers("/api/categorias/**").hasAnyRole("ADMIN","ASESOR")
                         .requestMatchers("/api/estados-tarea/**").hasRole("ADMIN")
                         .requestMatchers("/api/tipos-operacion/**").hasRole("ADMIN")
                         .requestMatchers("/api/clientes/**").hasAnyRole("ADMIN", "ASESOR")
