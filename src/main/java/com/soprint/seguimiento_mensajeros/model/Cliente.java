@@ -14,6 +14,7 @@ public class Cliente {
     private String ciudad;
     private Double latitud;
     private Double longitud;
+    private String detalle;
 
     public Long getIdCliente() {
         return idCliente;
@@ -79,7 +80,16 @@ public class Cliente {
         this.longitud = longitud;
     }
 
-    public Cliente(Long idCliente, String nombre, String telefono, String rucCi, String direccion, String ciudad, Double latitud, Double longitud) {
+    public String getDetalle() {
+        return detalle;
+    }
+
+    public void setDetalle(String detalle) {
+        this.detalle = detalle;
+    }
+
+    public Cliente(Long idCliente, String nombre, String telefono, String rucCi, String direccion, String ciudad,
+            Double latitud, Double longitud, String detalle) {
         this.idCliente = idCliente;
         this.nombre = nombre;
         this.telefono = telefono;
@@ -88,6 +98,7 @@ public class Cliente {
         this.ciudad = ciudad;
         this.latitud = latitud;
         this.longitud = longitud;
+        this.detalle = detalle;
     }
 
     public Cliente() {
