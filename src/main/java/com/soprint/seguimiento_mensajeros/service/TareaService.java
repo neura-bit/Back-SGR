@@ -1,6 +1,9 @@
 package com.soprint.seguimiento_mensajeros.service;
 
+import com.soprint.seguimiento_mensajeros.DTO.TareaWebhookPayload;
+import com.soprint.seguimiento_mensajeros.model.Cliente;
 import com.soprint.seguimiento_mensajeros.model.Tarea;
+import com.soprint.seguimiento_mensajeros.repository.ClienteRepository;
 import com.soprint.seguimiento_mensajeros.repository.TareaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,9 +17,14 @@ import java.util.Optional;
 public class TareaService implements ITareaService {
 
     private final TareaRepository tareaRepository;
+    private final ClienteRepository clienteRepository;
+    private final WebhookService webhookService;
 
-    public TareaService(TareaRepository tareaRepository) {
+    public TareaService(TareaRepository tareaRepository, ClienteRepository clienteRepository,
+            WebhookService webhookService) {
         this.tareaRepository = tareaRepository;
+        this.clienteRepository = clienteRepository;
+        this.webhookService = webhookService;
     }
 
     @Override
@@ -43,7 +51,36 @@ public class TareaService implements ITareaService {
         // aquí podrías poner un estado inicial por defecto si quieres
         // tarea.setEstadoTarea(estadoInicial);
 
-        return tareaRepository.save(tarea);
+        Tarea tareaGuardada = tareaRepository.save(tarea);
+
+        // Enviar webhook con información de la tarea y cliente
+        enviarWebhookTareaCreada(tareaGuardada);
+
+        return tareaGuardada;
+    }
+
+    /**
+     * Envía notificación por webhook cuando se crea una tarea.
+     */
+    private void enviarWebhookTareaCreada(Tarea tarea) {
+        try {
+            // Obtener información del cliente
+            Cliente cliente = null;
+            if (tarea.getCliente() != null && tarea.getCliente().getIdCliente() != null) {
+                cliente = clienteRepository.findById(tarea.getCliente().getIdCliente()).orElse(null);
+            }
+
+            TareaWebhookPayload payload = new TareaWebhookPayload(
+                    tarea.getCodigo(),
+                    cliente != null ? cliente.getNombre() : null,
+                    cliente != null ? cliente.getTelefono() : null,
+                    cliente != null ? cliente.getCorreo() : null);
+
+            webhookService.enviarNotificacionTareaCreada(payload);
+        } catch (Exception e) {
+            // No interrumpir el flujo si falla el webhook
+            System.err.println("Error preparando webhook: " + e.getMessage());
+        }
     }
 
     /**

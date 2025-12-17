@@ -15,6 +15,7 @@ public class Cliente {
     private Double latitud;
     private Double longitud;
     private String detalle;
+    private String correo;
 
     public Long getIdCliente() {
         return idCliente;
@@ -88,8 +89,16 @@ public class Cliente {
         this.detalle = detalle;
     }
 
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
     public Cliente(Long idCliente, String nombre, String telefono, String rucCi, String direccion, String ciudad,
-            Double latitud, Double longitud, String detalle) {
+            Double latitud, Double longitud, String detalle, String correo) {
         this.idCliente = idCliente;
         this.nombre = nombre;
         this.telefono = telefono;
@@ -99,6 +108,7 @@ public class Cliente {
         this.latitud = latitud;
         this.longitud = longitud;
         this.detalle = detalle;
+        this.correo = correo;
     }
 
     public Cliente() {
