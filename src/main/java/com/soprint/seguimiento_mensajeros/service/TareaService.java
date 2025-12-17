@@ -254,4 +254,27 @@ public class TareaService implements ITareaService {
         // 7. Guardar y retornar
         return tareaRepository.save(tarea);
     }
+
+    @Override
+    public void reenviarCodigoTarea(Long idTarea) {
+        // 1. Buscar la tarea
+        Tarea tarea = tareaRepository.findById(idTarea)
+                .orElseThrow(() -> new IllegalArgumentException("Tarea no encontrada con id: " + idTarea));
+
+        // 2. Obtener información del cliente
+        Cliente cliente = null;
+        if (tarea.getCliente() != null && tarea.getCliente().getIdCliente() != null) {
+            cliente = clienteRepository.findById(tarea.getCliente().getIdCliente()).orElse(null);
+        }
+
+        // 3. Crear el payload
+        TareaWebhookPayload payload = new TareaWebhookPayload(
+                tarea.getCodigo(),
+                cliente != null ? cliente.getNombre() : null,
+                cliente != null ? cliente.getTelefono() : null,
+                cliente != null ? cliente.getCorreo() : null);
+
+        // 4. Enviar al webhook
+        webhookService.enviarNotificacionTareaCreada(payload);
+    }
 }

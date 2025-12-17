@@ -27,4 +27,6 @@ public interface ITareaService {
     Tarea finalizarTarea(Long idTarea, String codigo, Long idEstadoTarea, String observacion);
 
     Tarea finalizarTareaSinCodigo(Long idTarea, Long idEstadoTarea, String observacion);
+
+    void reenviarCodigoTarea(Long idTarea);
 }

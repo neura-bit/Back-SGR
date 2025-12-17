@@ -173,4 +173,17 @@ public class TareaController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    // POST /api/tareas/{id}/reenviar-codigo - Reenvía código y datos del cliente al
+    // webhook
+    @PostMapping("/{id}/reenviar-codigo")
+    @PreAuthorize("hasAnyRole('MENSAJERO', 'ADMIN', 'ASESOR')")
+    public ResponseEntity<?> reenviarCodigoTarea(@PathVariable Long id) {
+        try {
+            tareaService.reenviarCodigoTarea(id);
+            return ResponseEntity.ok().body(java.util.Map.of("mensaje", "Código reenviado exitosamente"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
