@@ -50,6 +50,7 @@ public class ClienteService implements IClienteService {
         existente.setLatitud(cliente.getLatitud());
         existente.setLongitud(cliente.getLongitud());
         existente.setDetalle(cliente.getDetalle());
+        existente.setCorreo(cliente.getCorreo());
 
         return clienteRepository.save(existente);
     }
