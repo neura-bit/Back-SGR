@@ -61,9 +61,13 @@ public class Tarea {
     @Column(name = "fecha_fin")
     private LocalDateTime fechaFin;
 
-    // Tiempo total (por ejemplo en minutos)
+    // Tiempo total (por ejemplo en minutos) desde fechaCreacion hasta fechaFin
     @Column(name = "tiempo_total")
     private Long tiempoTotal;
+
+    // Tiempo de ejecución (en minutos) desde fechaInicio hasta fechaFin
+    @Column(name = "tiempo_ejecucion")
+    private Long tiempoEjecucion;
 
     @Column(name = "comentario", length = 1000)
     private String comentario;
@@ -186,6 +190,14 @@ public class Tarea {
         this.tiempoTotal = tiempoTotal;
     }
 
+    public Long getTiempoEjecucion() {
+        return tiempoEjecucion;
+    }
+
+    public void setTiempoEjecucion(Long tiempoEjecucion) {
+        this.tiempoEjecucion = tiempoEjecucion;
+    }
+
     public String getComentario() {
         return comentario;
     }
@@ -222,11 +234,16 @@ public class Tarea {
         return codigo;
     }
 
-    public void setCodigo(@Pattern(regexp = "\\d{4}", message = "El código debe tener exactamente 4 dígitos numéricos") String codigo) {
+    public void setCodigo(
+            @Pattern(regexp = "\\d{4}", message = "El código debe tener exactamente 4 dígitos numéricos") String codigo) {
         this.codigo = codigo;
     }
 
-    public Tarea(Long idTarea, TipoOperacion tipoOperacion, Categoria categoria, Cliente cliente, EstadoTarea estadoTarea, Usuario asesorCrea, Usuario mensajeroAsignado, Usuario supervisorAsigna, String nombre, LocalDateTime fechaCreacion, LocalDateTime fechaLimite, LocalDateTime fechaFin, Long tiempoTotal, String comentario, String observacion, String proceso, LocalDateTime fechaInicio, String codigo) {
+    public Tarea(Long idTarea, TipoOperacion tipoOperacion, Categoria categoria, Cliente cliente,
+            EstadoTarea estadoTarea, Usuario asesorCrea, Usuario mensajeroAsignado, Usuario supervisorAsigna,
+            String nombre, LocalDateTime fechaCreacion, LocalDateTime fechaLimite, LocalDateTime fechaFin,
+            Long tiempoTotal, Long tiempoEjecucion, String comentario, String observacion, String proceso,
+            LocalDateTime fechaInicio, String codigo) {
         this.idTarea = idTarea;
         this.tipoOperacion = tipoOperacion;
         this.categoria = categoria;
@@ -240,6 +257,7 @@ public class Tarea {
         this.fechaLimite = fechaLimite;
         this.fechaFin = fechaFin;
         this.tiempoTotal = tiempoTotal;
+        this.tiempoEjecucion = tiempoEjecucion;
         this.comentario = comentario;
         this.observacion = observacion;
         this.proceso = proceso;

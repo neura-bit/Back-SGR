@@ -121,4 +121,32 @@ public class TareaController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    // PUT /api/tareas/{id}/finalizar - MENSAJERO finaliza una tarea
+    @PutMapping("/{id}/finalizar")
+    @PreAuthorize("hasAnyRole('MENSAJERO', 'ADMIN')")
+    public ResponseEntity<?> finalizarTarea(
+            @PathVariable Long id,
+            @RequestBody com.soprint.seguimiento_mensajeros.DTO.FinalizarTareaRequest request) {
+        try {
+            // Validar campos requeridos
+            if (request.getCodigo() == null || request.getCodigo().isBlank()) {
+                return ResponseEntity.badRequest().body("El código es requerido");
+            }
+            if (request.getIdEstadoTarea() == null) {
+                return ResponseEntity.badRequest().body("El estado de la tarea es requerido");
+            }
+
+            Tarea tareaFinalizada = tareaService.finalizarTarea(
+                    id,
+                    request.getCodigo(),
+                    request.getIdEstadoTarea(),
+                    request.getObservacion());
+            return ResponseEntity.ok(tareaFinalizada);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
