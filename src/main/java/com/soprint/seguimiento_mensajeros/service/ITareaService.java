@@ -25,4 +25,6 @@ public interface ITareaService {
     Tarea reasignarMensajero(Long idTarea, Long idMensajero);
 
     Tarea finalizarTarea(Long idTarea, String codigo, Long idEstadoTarea, String observacion);
+
+    Tarea finalizarTareaSinCodigo(Long idTarea, Long idEstadoTarea, String observacion);
 }

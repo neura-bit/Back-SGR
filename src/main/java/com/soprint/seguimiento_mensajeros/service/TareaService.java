@@ -216,4 +216,42 @@ public class TareaService implements ITareaService {
         // 8. Guardar y retornar
         return tareaRepository.save(tarea);
     }
+
+    @Override
+    public Tarea finalizarTareaSinCodigo(Long idTarea, Long idEstadoTarea, String observacion) {
+        // 1. Buscar la tarea
+        Tarea tarea = tareaRepository.findById(idTarea)
+                .orElseThrow(() -> new IllegalArgumentException("Tarea no encontrada con id: " + idTarea));
+
+        // 2. Establecer fecha de finalización
+        LocalDateTime fechaFin = LocalDateTime.now();
+        tarea.setFechaFin(fechaFin);
+
+        // 3. Calcular tiempoTotal (desde fechaCreacion hasta fechaFin) en minutos
+        if (tarea.getFechaCreacion() != null) {
+            long minutosTotal = java.time.Duration.between(tarea.getFechaCreacion(), fechaFin).toMinutes();
+            tarea.setTiempoTotal(minutosTotal);
+        }
+
+        // 4. Calcular tiempoEjecucion (desde fechaInicio hasta fechaFin) en minutos
+        if (tarea.getFechaInicio() != null) {
+            long minutosEjecucion = java.time.Duration.between(tarea.getFechaInicio(), fechaFin).toMinutes();
+            tarea.setTiempoEjecucion(minutosEjecucion);
+        }
+
+        // 5. Actualizar estado de la tarea
+        if (idEstadoTarea != null) {
+            com.soprint.seguimiento_mensajeros.model.EstadoTarea nuevoEstado = new com.soprint.seguimiento_mensajeros.model.EstadoTarea();
+            nuevoEstado.setIdEstadoTarea(idEstadoTarea);
+            tarea.setEstadoTarea(nuevoEstado);
+        }
+
+        // 6. Guardar observación
+        if (observacion != null) {
+            tarea.setObservacion(observacion);
+        }
+
+        // 7. Guardar y retornar
+        return tareaRepository.save(tarea);
+    }
 }

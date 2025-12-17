@@ -149,4 +149,28 @@ public class TareaController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // PUT /api/tareas/{id}/finalizar-sin-codigo - Finaliza una tarea sin validar
+    // código
+    @PutMapping("/{id}/finalizar-sin-codigo")
+    @PreAuthorize("hasAnyRole('MENSAJERO', 'ADMIN', 'SUPERVISOR')")
+    public ResponseEntity<?> finalizarTareaSinCodigo(
+            @PathVariable Long id,
+            @RequestBody Map<String, Object> body) {
+        try {
+            Long idEstadoTarea = body.get("idEstadoTarea") != null
+                    ? ((Number) body.get("idEstadoTarea")).longValue()
+                    : null;
+            String observacion = (String) body.get("observacion");
+
+            if (idEstadoTarea == null) {
+                return ResponseEntity.badRequest().body("El estado de la tarea es requerido");
+            }
+
+            Tarea tareaFinalizada = tareaService.finalizarTareaSinCodigo(id, idEstadoTarea, observacion);
+            return ResponseEntity.ok(tareaFinalizada);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
