@@ -10,6 +10,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -184,6 +186,25 @@ public class TareaController {
             return ResponseEntity.ok().body(java.util.Map.of("mensaje", "Código reenviado exitosamente"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    // GET /api/tareas/por-fechas - Obtener tareas por rango de fechas
+    // Ejemplo:
+    // /api/tareas/por-fechas?fechaInicio=2024-01-01T00:00:00&fechaFin=2024-01-31T23:59:59
+    @GetMapping("/por-fechas")
+    public ResponseEntity<List<Tarea>> obtenerPorRangoFechas(
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+            LocalDateTime inicio = LocalDateTime.parse(fechaInicio, formatter);
+            LocalDateTime fin = LocalDateTime.parse(fechaFin, formatter);
+
+            List<Tarea> tareas = tareaService.findByRangoFechas(inicio, fin);
+            return ResponseEntity.ok(tareas);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 }

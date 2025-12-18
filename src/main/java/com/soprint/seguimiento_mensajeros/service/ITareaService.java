@@ -2,6 +2,7 @@ package com.soprint.seguimiento_mensajeros.service;
 
 import com.soprint.seguimiento_mensajeros.model.Tarea;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,4 +30,7 @@ public interface ITareaService {
     Tarea finalizarTareaSinCodigo(Long idTarea, Long idEstadoTarea, String observacion);
 
     void reenviarCodigoTarea(Long idTarea);
+
+    // Buscar tareas por rango de fechas
+    List<Tarea> findByRangoFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin);
 }

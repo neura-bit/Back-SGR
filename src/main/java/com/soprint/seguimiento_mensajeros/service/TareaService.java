@@ -277,4 +277,10 @@ public class TareaService implements ITareaService {
         // 4. Enviar al webhook
         webhookService.enviarNotificacionTareaCreada(payload);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Tarea> findByRangoFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
+        return tareaRepository.findByFechaCreacionBetween(fechaInicio, fechaFin);
+    }
 }
