@@ -149,6 +149,14 @@ public class TareaService implements ITareaService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<Tarea> findTareasActivasByMensajero(Long idMensajero) {
+        // Solo traer tareas con estados activos: PENDIENTE, EN PROCESO
+        List<String> estadosActivos = List.of( "PENDIENTE", "EN PROCESO");
+        return tareaRepository.findByMensajeroAsignadoIdUsuarioAndEstadoTareaNombreIn(idMensajero, estadosActivos);
+    }
+
+    @Override
     public Tarea asignarMensajero(Long idTarea, Long idMensajero) {
         Tarea tarea = tareaRepository.findById(idTarea)
                 .orElseThrow(() -> new IllegalArgumentException("Tarea no encontrada con id: " + idTarea));

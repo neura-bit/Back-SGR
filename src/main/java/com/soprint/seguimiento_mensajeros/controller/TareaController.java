@@ -75,7 +75,8 @@ public class TareaController {
 
     // ===== ROLE-SPECIFIC ENDPOINTS =====
 
-    // GET /api/tareas/mis-tareas - MENSAJERO gets their assigned tasks
+    // GET /api/tareas/mis-tareas - MENSAJERO gets their assigned tasks (only
+    // active: CREADA, PENDIENTE, EN PROCESO)
     @GetMapping("/mis-tareas")
     @PreAuthorize("hasAnyRole('MENSAJERO', 'ADMIN')")
     public ResponseEntity<List<Tarea>> misTareas(Authentication authentication) {
@@ -84,7 +85,8 @@ public class TareaController {
         if (usuario == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(tareaService.findByMensajero(usuario.getIdUsuario()));
+        // Solo devuelve tareas con estado CREADA, PENDIENTE o EN PROCESO
+        return ResponseEntity.ok(tareaService.findTareasActivasByMensajero(usuario.getIdUsuario()));
     }
 
     // PUT /api/tareas/{id}/asignar - ASESOR assigns a task to a messenger

@@ -21,6 +21,9 @@ public interface ITareaService {
     // Role-specific methods
     List<Tarea> findByMensajero(Long idMensajero);
 
+    // Obtener tareas activas (CREADA, PENDIENTE, EN PROCESO) del mensajero
+    List<Tarea> findTareasActivasByMensajero(Long idMensajero);
+
     Tarea asignarMensajero(Long idTarea, Long idMensajero);
 
     Tarea reasignarMensajero(Long idTarea, Long idMensajero);

@@ -13,6 +13,9 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
 
     List<Tarea> findByMensajeroAsignadoIdUsuario(Long idMensajero);
 
+    // Método para buscar tareas por mensajero y filtrar por estados específicos
+    List<Tarea> findByMensajeroAsignadoIdUsuarioAndEstadoTareaNombreIn(Long idMensajero, List<String> nombresEstado);
+
     // Método para obtener la tarea con el código más alto (para autogenerar el
     // siguiente)
     Optional<Tarea> findTopByOrderByCodigoDesc();
