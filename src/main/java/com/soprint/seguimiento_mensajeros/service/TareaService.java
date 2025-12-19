@@ -152,7 +152,7 @@ public class TareaService implements ITareaService {
     @Transactional(readOnly = true)
     public List<Tarea> findTareasActivasByMensajero(Long idMensajero) {
         // Solo traer tareas con estados activos: PENDIENTE, EN PROCESO
-        List<String> estadosActivos = List.of( "PENDIENTE", "EN PROCESO");
+        List<String> estadosActivos = List.of("PENDIENTE", "EN PROCESO");
         return tareaRepository.findByMensajeroAsignadoIdUsuarioAndEstadoTareaNombreIn(idMensajero, estadosActivos);
     }
 
@@ -290,5 +290,13 @@ public class TareaService implements ITareaService {
     @Transactional(readOnly = true)
     public List<Tarea> findByRangoFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
         return tareaRepository.findByFechaCreacionBetween(fechaInicio, fechaFin);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Tarea> findTareasCompletadasByMensajeroAndFechas(Long idMensajero, LocalDateTime fechaInicio,
+            LocalDateTime fechaFin) {
+        return tareaRepository.findByMensajeroAsignadoIdUsuarioAndEstadoTareaNombreAndFechaFinBetween(
+                idMensajero, "COMPLETADA", fechaInicio, fechaFin);
     }
 }

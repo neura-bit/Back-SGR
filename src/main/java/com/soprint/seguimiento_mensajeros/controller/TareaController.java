@@ -209,4 +209,33 @@ public class TareaController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    // GET /api/tareas/mis-tareas-completadas - Obtener tareas COMPLETADAS del
+    // mensajero por rango de fechas
+    // Ejemplo:
+    // /api/tareas/mis-tareas-completadas?fechaInicio=2024-01-01T00:00:00&fechaFin=2024-01-31T23:59:59
+    @GetMapping("/mis-tareas-completadas")
+    @PreAuthorize("hasAnyRole('MENSAJERO', 'ADMIN')")
+    public ResponseEntity<List<Tarea>> misTareasCompletadas(
+            Authentication authentication,
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin) {
+        try {
+            String username = authentication.getName();
+            Usuario usuario = usuarioRepository.findByUsername(username).orElse(null);
+            if (usuario == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+            LocalDateTime inicio = LocalDateTime.parse(fechaInicio, formatter);
+            LocalDateTime fin = LocalDateTime.parse(fechaFin, formatter);
+
+            List<Tarea> tareas = tareaService.findTareasCompletadasByMensajeroAndFechas(
+                    usuario.getIdUsuario(), inicio, fin);
+            return ResponseEntity.ok(tareas);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

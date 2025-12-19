@@ -22,4 +22,8 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
 
     // Método para buscar tareas por rango de fechas de creación
     List<Tarea> findByFechaCreacionBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);
+
+    // Método para buscar tareas completadas por mensajero y rango de fechas
+    List<Tarea> findByMensajeroAsignadoIdUsuarioAndEstadoTareaNombreAndFechaFinBetween(
+            Long idMensajero, String estadoNombre, LocalDateTime fechaInicio, LocalDateTime fechaFin);
 }

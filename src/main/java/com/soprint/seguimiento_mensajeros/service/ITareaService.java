@@ -36,4 +36,8 @@ public interface ITareaService {
 
     // Buscar tareas por rango de fechas
     List<Tarea> findByRangoFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin);
+
+    // Buscar tareas completadas por mensajero y rango de fechas
+    List<Tarea> findTareasCompletadasByMensajeroAndFechas(Long idMensajero, LocalDateTime fechaInicio,
+            LocalDateTime fechaFin);
 }
