@@ -79,6 +79,7 @@ public class AuthController {
                 usuario.getNombre(),
                 usuario.getApellido(),
                 usuario.getRol() != null ? usuario.getRol().getNombre() : "USER",
+                usuario.getCorreo(),
                 usuario.getIdUsuario(),
                 jwtService.getExpirationTime());
 
@@ -105,6 +106,7 @@ public class AuthController {
                     "username", usuario.getUsername(),
                     "nombre", usuario.getNombre(),
                     "apellido", usuario.getApellido(),
+                    "correo", usuario.getCorreo() != null ? usuario.getCorreo() : "",
                     "rol", usuario.getRol() != null ? usuario.getRol().getNombre() : "USER",
                     "sucursal", usuario.getSucursal() != null ? usuario.getSucursal().getNombre() : null));
         } catch (Exception e) {

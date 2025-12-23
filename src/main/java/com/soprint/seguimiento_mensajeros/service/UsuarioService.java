@@ -14,9 +14,12 @@ import java.util.Optional;
 public class UsuarioService implements IUsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository,
+            org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -55,11 +58,15 @@ public class UsuarioService implements IUsuarioService {
         existente.apellido = usuario.apellido;
         existente.telefono = usuario.telefono;
         existente.username = usuario.username;
+        existente.correo = usuario.correo;
         existente.estado = usuario.estado;
         existente.sucursal = usuario.sucursal;
         existente.rol = usuario.rol;
 
-        // NO actualizamos password ni fechaCreacion en update normal (buena práctica)
+        // Actualizar password si se proporciona una nueva (no vacía)
+        if (usuario.password != null && !usuario.password.trim().isEmpty()) {
+            existente.password = passwordEncoder.encode(usuario.password);
+        }
 
         return usuarioRepository.save(existente);
     }

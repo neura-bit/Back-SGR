@@ -15,13 +15,14 @@ public class Usuario {
     public String telefono;
     public String username;
     public String password;
+    public String correo;
     public Boolean estado;
     public LocalDateTime fechaCreacion;
     @ManyToOne
-    @JoinColumn(name="idSucursal")
+    @JoinColumn(name = "idSucursal")
     public Sucursal sucursal;
     @ManyToOne
-    @JoinColumn(name="idRol")
+    @JoinColumn(name = "idRol")
     public Rol rol;
 
     public Long getIdUsuario() {
@@ -104,13 +105,23 @@ public class Usuario {
         this.rol = rol;
     }
 
-    public Usuario(Long idUsuario, String nombre, String apellido, String telefono, String username, String password, Boolean estado, LocalDateTime fechaCreacion, Sucursal sucursal, Rol rol) {
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public Usuario(Long idUsuario, String nombre, String apellido, String telefono, String username, String password,
+            String correo, Boolean estado, LocalDateTime fechaCreacion, Sucursal sucursal, Rol rol) {
         this.idUsuario = idUsuario;
         this.nombre = nombre;
         this.apellido = apellido;
         this.telefono = telefono;
         this.username = username;
         this.password = password;
+        this.correo = correo;
         this.estado = estado;
         this.fechaCreacion = fechaCreacion;
         this.sucursal = sucursal;
