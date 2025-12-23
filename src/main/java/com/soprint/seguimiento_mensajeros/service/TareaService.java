@@ -299,4 +299,22 @@ public class TareaService implements ITareaService {
         return tareaRepository.findByMensajeroAsignadoIdUsuarioAndEstadoTareaNombreAndFechaFinBetween(
                 idMensajero, "COMPLETADA", fechaInicio, fechaFin);
     }
+
+    @Override
+    public Tarea iniciarTarea(Long idTarea) {
+        // 1. Buscar la tarea
+        Tarea tarea = tareaRepository.findById(idTarea)
+                .orElseThrow(() -> new IllegalArgumentException("Tarea no encontrada con id: " + idTarea));
+
+        // 2. Cambiar estado a EN PROCESO (id = 2)
+        com.soprint.seguimiento_mensajeros.model.EstadoTarea estadoEnProceso = new com.soprint.seguimiento_mensajeros.model.EstadoTarea();
+        estadoEnProceso.setIdEstadoTarea(2L);
+        tarea.setEstadoTarea(estadoEnProceso);
+
+        // 3. Registrar fecha de inicio
+        tarea.setFechaInicio(LocalDateTime.now());
+
+        // 4. Guardar y retornar
+        return tareaRepository.save(tarea);
+    }
 }

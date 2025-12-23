@@ -40,4 +40,7 @@ public interface ITareaService {
     // Buscar tareas completadas por mensajero y rango de fechas
     List<Tarea> findTareasCompletadasByMensajeroAndFechas(Long idMensajero, LocalDateTime fechaInicio,
             LocalDateTime fechaFin);
+
+    // Iniciar tarea: cambiar estado a EN PROCESO y registrar fecha inicio
+    Tarea iniciarTarea(Long idTarea);
 }

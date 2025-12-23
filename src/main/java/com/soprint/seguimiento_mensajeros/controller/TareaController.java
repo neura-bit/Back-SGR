@@ -126,6 +126,19 @@ public class TareaController {
         }
     }
 
+    // PUT /api/tareas/{id}/iniciar - MENSAJERO inicia una tarea (cambia estado a EN
+    // PROCESO y registra fecha inicio)
+    @PutMapping("/{id}/iniciar")
+    @PreAuthorize("hasAnyRole('MENSAJERO', 'ADMIN')")
+    public ResponseEntity<?> iniciarTarea(@PathVariable Long id) {
+        try {
+            Tarea tareaIniciada = tareaService.iniciarTarea(id);
+            return ResponseEntity.ok(tareaIniciada);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     // PUT /api/tareas/{id}/finalizar - MENSAJERO finaliza una tarea
     @PutMapping("/{id}/finalizar")
     @PreAuthorize("hasAnyRole('MENSAJERO', 'ADMIN')")
