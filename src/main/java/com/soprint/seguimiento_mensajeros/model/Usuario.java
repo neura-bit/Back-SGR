@@ -15,6 +15,7 @@ public class Usuario {
     public String telefono;
     public String username;
     public String password;
+    @Column(name = "correo")
     public String correo;
     public Boolean estado;
     public LocalDateTime fechaCreacion;
