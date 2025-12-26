@@ -221,7 +221,12 @@ public class TareaService implements ITareaService {
             tarea.setObservacion(observacion);
         }
 
-        // 8. Guardar y retornar
+        // 8. Calcular si la entrega fue a tiempo
+        if (tarea.getFechaLimite() != null) {
+            tarea.setEntregaATiempo(!fechaFin.isAfter(tarea.getFechaLimite()));
+        }
+
+        // 9. Guardar y retornar
         return tareaRepository.save(tarea);
     }
 
@@ -259,7 +264,12 @@ public class TareaService implements ITareaService {
             tarea.setObservacion(observacion);
         }
 
-        // 7. Guardar y retornar
+        // 7. Calcular si la entrega fue a tiempo
+        if (tarea.getFechaLimite() != null) {
+            tarea.setEntregaATiempo(!fechaFin.isAfter(tarea.getFechaLimite()));
+        }
+
+        // 8. Guardar y retornar
         return tareaRepository.save(tarea);
     }
 
@@ -312,9 +322,16 @@ public class TareaService implements ITareaService {
         tarea.setEstadoTarea(estadoEnProceso);
 
         // 3. Registrar fecha de inicio
-        tarea.setFechaInicio(LocalDateTime.now());
+        LocalDateTime fechaInicio = LocalDateTime.now();
+        tarea.setFechaInicio(fechaInicio);
 
-        // 4. Guardar y retornar
+        // 4. Calcular tiempo de respuesta (desde asignación/creación hasta inicio)
+        if (tarea.getFechaCreacion() != null) {
+            long minutosRespuesta = java.time.Duration.between(tarea.getFechaCreacion(), fechaInicio).toMinutes();
+            tarea.setTiempoRespuesta(minutosRespuesta);
+        }
+
+        // 5. Guardar y retornar
         return tareaRepository.save(tarea);
     }
 }

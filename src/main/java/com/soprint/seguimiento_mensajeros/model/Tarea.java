@@ -86,6 +86,15 @@ public class Tarea {
     @Column(name = "codigo", length = 4, nullable = false)
     private String codigo;
 
+    // Indicador si la entrega fue a tiempo (fechaFin <= fechaLimite)
+    @Column(name = "entrega_a_tiempo")
+    private Boolean entregaATiempo;
+
+    // Tiempo de respuesta en minutos (desde fechaCreacion/asignación hasta
+    // fechaInicio)
+    @Column(name = "tiempo_respuesta")
+    private Long tiempoRespuesta;
+
     public Long getIdTarea() {
         return idTarea;
     }
@@ -239,11 +248,27 @@ public class Tarea {
         this.codigo = codigo;
     }
 
+    public Boolean getEntregaATiempo() {
+        return entregaATiempo;
+    }
+
+    public void setEntregaATiempo(Boolean entregaATiempo) {
+        this.entregaATiempo = entregaATiempo;
+    }
+
+    public Long getTiempoRespuesta() {
+        return tiempoRespuesta;
+    }
+
+    public void setTiempoRespuesta(Long tiempoRespuesta) {
+        this.tiempoRespuesta = tiempoRespuesta;
+    }
+
     public Tarea(Long idTarea, TipoOperacion tipoOperacion, Categoria categoria, Cliente cliente,
             EstadoTarea estadoTarea, Usuario asesorCrea, Usuario mensajeroAsignado, Usuario supervisorAsigna,
             String nombre, LocalDateTime fechaCreacion, LocalDateTime fechaLimite, LocalDateTime fechaFin,
             Long tiempoTotal, Long tiempoEjecucion, String comentario, String observacion, String proceso,
-            LocalDateTime fechaInicio, String codigo) {
+            LocalDateTime fechaInicio, String codigo, Boolean entregaATiempo, Long tiempoRespuesta) {
         this.idTarea = idTarea;
         this.tipoOperacion = tipoOperacion;
         this.categoria = categoria;
@@ -263,6 +288,8 @@ public class Tarea {
         this.proceso = proceso;
         this.fechaInicio = fechaInicio;
         this.codigo = codigo;
+        this.entregaATiempo = entregaATiempo;
+        this.tiempoRespuesta = tiempoRespuesta;
     }
 
     public Tarea() {
