@@ -75,4 +75,50 @@ public class MensajeroMetricsController {
         List<MensajeroMetricsDTO> metricas = metricsService.getComparativoMensajeros(fechaInicio, fechaFin);
         return ResponseEntity.ok(metricas);
     }
+
+    // ===== ENDPOINTS FILTRADOS POR SUCURSAL =====
+
+    /**
+     * Obtiene las métricas de un mensajero específico validando que pertenezca a la
+     * sucursal.
+     * 
+     * Ejemplo: GET
+     * /api/metricas/mensajeros/sucursal/1/mensajero/5?fechaInicio=2024-01-01&fechaFin=2024-01-31
+     */
+    @GetMapping("/sucursal/{idSucursal}/mensajero/{idMensajero}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
+    public ResponseEntity<MensajeroMetricsDTO> getMetricasMensajeroPorSucursal(
+            @PathVariable Long idSucursal,
+            @PathVariable Long idMensajero,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+        try {
+            // Validar que el mensajero pertenece a la sucursal
+            if (!metricsService.mensajeroPerteneceASucursal(idMensajero, idSucursal)) {
+                return ResponseEntity.badRequest().build();
+            }
+            MensajeroMetricsDTO metricas = metricsService.getMetricasMensajero(idMensajero, fechaInicio, fechaFin);
+            return ResponseEntity.ok(metricas);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * Obtiene un comparativo de todos los mensajeros de una sucursal ordenados por
+     * rendimiento.
+     * 
+     * Ejemplo: GET
+     * /api/metricas/mensajeros/sucursal/1/comparativo?fechaInicio=2024-01-01&fechaFin=2024-01-31
+     */
+    @GetMapping("/sucursal/{idSucursal}/comparativo")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
+    public ResponseEntity<List<MensajeroMetricsDTO>> getComparativoMensajerosPorSucursal(
+            @PathVariable Long idSucursal,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+        List<MensajeroMetricsDTO> metricas = metricsService.getComparativoMensajerosPorSucursal(idSucursal, fechaInicio,
+                fechaFin);
+        return ResponseEntity.ok(metricas);
+    }
 }

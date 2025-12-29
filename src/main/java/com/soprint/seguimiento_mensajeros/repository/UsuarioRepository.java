@@ -16,4 +16,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     // Buscar usuarios por nombre de rol
     List<Usuario> findByRolNombre(String nombreRol);
+
+    // Buscar usuarios por nombre de rol y sucursal
+    List<Usuario> findByRolNombreAndSucursalIdSucursal(String nombreRol, Long idSucursal);
 }
