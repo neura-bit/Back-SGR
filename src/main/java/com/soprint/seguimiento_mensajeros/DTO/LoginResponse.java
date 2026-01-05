@@ -9,13 +9,13 @@ public class LoginResponse {
     private String correo;
     private Long idUsuario;
     private Long expiresIn;
+    private String fotoPerfil;
 
     public LoginResponse() {
     }
 
     public LoginResponse(String token, String username, String nombre, String apellido, String rol, String correo,
-            Long idUsuario,
-            Long expiresIn) {
+            Long idUsuario, long expiresIn, String fotoPerfil) {
         this.token = token;
         this.username = username;
         this.nombre = nombre;
@@ -24,6 +24,7 @@ public class LoginResponse {
         this.correo = correo;
         this.idUsuario = idUsuario;
         this.expiresIn = expiresIn;
+        this.fotoPerfil = fotoPerfil;
     }
 
     public String getToken() {
@@ -88,5 +89,13 @@ public class LoginResponse {
 
     public void setCorreo(String correo) {
         this.correo = correo;
+    }
+
+    public String getFotoPerfil() {
+        return fotoPerfil;
+    }
+
+    public void setFotoPerfil(String fotoPerfil) {
+        this.fotoPerfil = fotoPerfil;
     }
 }

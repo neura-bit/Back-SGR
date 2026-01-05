@@ -11,6 +11,7 @@ public class PosicionMensajeroResponse {
     private Double latitud;
     private Double longitud;
     private LocalDateTime fechaUltimaActualizacion;
+    private String fotoPerfil;
 
     public Long getIdMensajero() {
         return idMensajero;
@@ -68,7 +69,15 @@ public class PosicionMensajeroResponse {
         this.fechaUltimaActualizacion = fechaUltimaActualizacion;
     }
 
-    public PosicionMensajeroResponse(Long idMensajero, String nombreCompleto, Long idTareaActual, String nombreTareaActual, Double latitud, Double longitud, LocalDateTime fechaUltimaActualizacion) {
+    public String getFotoPerfil() {
+        return fotoPerfil;
+    }
+
+    public void setFotoPerfil(String fotoPerfil) {
+        this.fotoPerfil = fotoPerfil;
+    }
+
+    public PosicionMensajeroResponse(Long idMensajero, String nombreCompleto, Long idTareaActual, String nombreTareaActual, Double latitud, Double longitud, LocalDateTime fechaUltimaActualizacion, String fotoPerfil) {
         this.idMensajero = idMensajero;
         this.nombreCompleto = nombreCompleto;
         this.idTareaActual = idTareaActual;
@@ -76,6 +85,7 @@ public class PosicionMensajeroResponse {
         this.latitud = latitud;
         this.longitud = longitud;
         this.fechaUltimaActualizacion = fechaUltimaActualizacion;
+        this.fotoPerfil = fotoPerfil;
     }
 
     public PosicionMensajeroResponse() {

@@ -91,6 +91,7 @@ public class TrackingServiceImpl implements TrackingService {
                     dto.setLatitud(pos.getLatitud());
                     dto.setLongitud(pos.getLongitud());
                     dto.setFechaUltimaActualizacion(pos.getFechaUltimaActualizacion());
+                    dto.setFotoPerfil(m.getFotoPerfil());
 
                     return dto;
                 })
