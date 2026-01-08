@@ -1,10 +1,13 @@
 package com.soprint.seguimiento_mensajeros.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 public class Tarea {
@@ -94,6 +97,11 @@ public class Tarea {
     // fechaInicio)
     @Column(name = "tiempo_respuesta")
     private Long tiempoRespuesta;
+
+    // ===== ARCHIVOS ADJUNTOS =====
+    @OneToMany(mappedBy = "tarea", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<ArchivoAdjunto> archivosAdjuntos = new ArrayList<>();
 
     public Long getIdTarea() {
         return idTarea;
@@ -262,6 +270,14 @@ public class Tarea {
 
     public void setTiempoRespuesta(Long tiempoRespuesta) {
         this.tiempoRespuesta = tiempoRespuesta;
+    }
+
+    public List<ArchivoAdjunto> getArchivosAdjuntos() {
+        return archivosAdjuntos;
+    }
+
+    public void setArchivosAdjuntos(List<ArchivoAdjunto> archivosAdjuntos) {
+        this.archivosAdjuntos = archivosAdjuntos;
     }
 
     public Tarea(Long idTarea, TipoOperacion tipoOperacion, Categoria categoria, Cliente cliente,

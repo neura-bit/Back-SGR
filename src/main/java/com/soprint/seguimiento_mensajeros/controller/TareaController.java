@@ -1,5 +1,6 @@
 package com.soprint.seguimiento_mensajeros.controller;
 
+import com.soprint.seguimiento_mensajeros.DTO.TareaResponse;
 import com.soprint.seguimiento_mensajeros.model.Tarea;
 import com.soprint.seguimiento_mensajeros.model.Usuario;
 import com.soprint.seguimiento_mensajeros.repository.UsuarioRepository;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/tareas")
@@ -29,15 +31,18 @@ public class TareaController {
 
     // GET /api/tareas
     @GetMapping
-    public ResponseEntity<List<Tarea>> listar() {
-        return ResponseEntity.ok(tareaService.findAll());
+    public ResponseEntity<List<TareaResponse>> listar() {
+        List<TareaResponse> tareas = tareaService.findAll().stream()
+                .map(TareaResponse::fromEntity)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(tareas);
     }
 
     // GET /api/tareas/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<Tarea> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<TareaResponse> obtenerPorId(@PathVariable Long id) {
         return tareaService.findById(id)
-                .map(ResponseEntity::ok)
+                .map(tarea -> ResponseEntity.ok(TareaResponse.fromEntity(tarea)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -208,7 +213,7 @@ public class TareaController {
     // Ejemplo:
     // /api/tareas/por-fechas?fechaInicio=2024-01-01T00:00:00&fechaFin=2024-01-31T23:59:59
     @GetMapping("/por-fechas")
-    public ResponseEntity<List<Tarea>> obtenerPorRangoFechas(
+    public ResponseEntity<List<TareaResponse>> obtenerPorRangoFechas(
             @RequestParam String fechaInicio,
             @RequestParam String fechaFin) {
         try {
@@ -216,7 +221,9 @@ public class TareaController {
             LocalDateTime inicio = LocalDateTime.parse(fechaInicio, formatter);
             LocalDateTime fin = LocalDateTime.parse(fechaFin, formatter);
 
-            List<Tarea> tareas = tareaService.findByRangoFechas(inicio, fin);
+            List<TareaResponse> tareas = tareaService.findByRangoFechas(inicio, fin).stream()
+                    .map(TareaResponse::fromEntity)
+                    .collect(Collectors.toList());
             return ResponseEntity.ok(tareas);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
@@ -229,7 +236,7 @@ public class TareaController {
     // /api/tareas/mis-tareas-completadas?fechaInicio=2024-01-01T00:00:00&fechaFin=2024-01-31T23:59:59
     @GetMapping("/mis-tareas-completadas")
     @PreAuthorize("hasAnyRole('MENSAJERO', 'ADMIN')")
-    public ResponseEntity<List<Tarea>> misTareasCompletadas(
+    public ResponseEntity<List<TareaResponse>> misTareasCompletadas(
             Authentication authentication,
             @RequestParam String fechaInicio,
             @RequestParam String fechaFin) {
@@ -244,8 +251,10 @@ public class TareaController {
             LocalDateTime inicio = LocalDateTime.parse(fechaInicio, formatter);
             LocalDateTime fin = LocalDateTime.parse(fechaFin, formatter);
 
-            List<Tarea> tareas = tareaService.findTareasCompletadasByMensajeroAndFechas(
-                    usuario.getIdUsuario(), inicio, fin);
+            List<TareaResponse> tareas = tareaService.findTareasCompletadasByMensajeroAndFechas(
+                    usuario.getIdUsuario(), inicio, fin).stream()
+                    .map(TareaResponse::fromEntity)
+                    .collect(Collectors.toList());
             return ResponseEntity.ok(tareas);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
