@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/tracking")
-@CrossOrigin(origins = "*") // ajusta según tu frontend
 public class TrackingController {
 
     private final TrackingService trackingService;

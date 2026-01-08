@@ -25,9 +25,9 @@ public class TrackingServiceImpl implements TrackingService {
     private final TareaRepository tareaRepository;
 
     public TrackingServiceImpl(PosicionMensajeroActualRepository posicionActualRepository,
-                               PosicionTareaHistoricoRepository historicoRepository,
-                               UsuarioRepository usuarioRepository,
-                               TareaRepository tareaRepository) {
+            PosicionTareaHistoricoRepository historicoRepository,
+            UsuarioRepository usuarioRepository,
+            TareaRepository tareaRepository) {
         this.posicionActualRepository = posicionActualRepository;
         this.historicoRepository = historicoRepository;
         this.usuarioRepository = usuarioRepository;
@@ -41,8 +41,12 @@ public class TrackingServiceImpl implements TrackingService {
         Usuario mensajero = usuarioRepository.findById(request.getIdMensajero())
                 .orElseThrow(() -> new RuntimeException("Mensajero no encontrado"));
 
-        Tarea tarea = tareaRepository.findById(request.getIdTarea())
-                .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
+        // La tarea es opcional - solo buscar si se proporciona idTarea
+        Tarea tarea = null;
+        if (request.getIdTarea() != null) {
+            tarea = tareaRepository.findById(request.getIdTarea())
+                    .orElse(null);
+        }
 
         LocalDateTime ahora = LocalDateTime.now();
 
@@ -84,7 +88,7 @@ public class TrackingServiceImpl implements TrackingService {
 
                     PosicionMensajeroResponse dto = new PosicionMensajeroResponse();
                     // OJO: aquí usa los getters reales de tus entidades
-                    dto.setIdMensajero(m.getIdUsuario());              // si tu campo es idUsuario
+                    dto.setIdMensajero(m.getIdUsuario()); // si tu campo es idUsuario
                     dto.setNombreCompleto(m.getNombre() + " " + m.getApellido());
                     dto.setIdTareaActual(t != null ? t.getIdTarea() : null);
                     dto.setNombreTareaActual(t != null ? t.getNombre() : null);

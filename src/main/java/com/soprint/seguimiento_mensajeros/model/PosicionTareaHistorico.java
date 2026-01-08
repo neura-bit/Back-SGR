@@ -15,8 +15,8 @@ public class PosicionTareaHistorico {
     @Column(name = "id_historial")
     private Long idHistorial;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_tarea", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "id_tarea", nullable = true)
     private Tarea tarea;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -80,7 +80,8 @@ public class PosicionTareaHistorico {
         this.fechaRegistro = fechaRegistro;
     }
 
-    public PosicionTareaHistorico(Long idHistorial, Tarea tarea, Usuario mensajero, Double latitud, Double longitud, LocalDateTime fechaRegistro) {
+    public PosicionTareaHistorico(Long idHistorial, Tarea tarea, Usuario mensajero, Double latitud, Double longitud,
+            LocalDateTime fechaRegistro) {
         this.idHistorial = idHistorial;
         this.tarea = tarea;
         this.mensajero = mensajero;
