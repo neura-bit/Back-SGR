@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SucursalRepository extends JpaRepository<Sucursal, Long> {
+    java.util.List<Sucursal> findByActivoTrue();
 }

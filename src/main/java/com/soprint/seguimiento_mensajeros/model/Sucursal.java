@@ -3,7 +3,6 @@ package com.soprint.seguimiento_mensajeros.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -18,6 +17,9 @@ public class Sucursal {
     @OneToMany(mappedBy = "sucursal")
     @JsonIgnore
     public List<Usuario> listUsuarios;
+
+    @Column(columnDefinition = "boolean default true")
+    public Boolean activo = true;
 
     public Long getIdSucursal() {
         return idSucursal;
@@ -67,7 +69,16 @@ public class Sucursal {
         this.listUsuarios = listUsuarios;
     }
 
-    public Sucursal(Long idSucursal, String nombre, String direccion, String ciudad, String telefono, List<Usuario> listUsuarios) {
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+
+    public Sucursal(Long idSucursal, String nombre, String direccion, String ciudad, String telefono,
+            List<Usuario> listUsuarios) {
         this.idSucursal = idSucursal;
         this.nombre = nombre;
         this.direccion = direccion;

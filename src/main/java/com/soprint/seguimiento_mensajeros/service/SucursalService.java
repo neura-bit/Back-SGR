@@ -21,25 +21,27 @@ public class SucursalService implements ISucursalService {
     @Override
     @Transactional(readOnly = true)
     public List<Sucursal> findAll() {
-        return sucursalRepository.findAll();
+        return sucursalRepository.findByActivoTrue();
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<Sucursal> findById(Long id) {
-        return sucursalRepository.findById(id);
+        return sucursalRepository.findById(id).filter(Sucursal::getActivo);
     }
 
     @Override
     public Sucursal create(Sucursal sucursal) {
         sucursal.setIdSucursal(null);
+        sucursal.setActivo(true);
         return sucursalRepository.save(sucursal);
     }
 
     @Override
     public Sucursal update(Long id, Sucursal sucursal) {
         Sucursal existente = sucursalRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Sucursal no encontrada con id: " + id));
+                .filter(Sucursal::getActivo)
+                .orElseThrow(() -> new IllegalArgumentException("Sucursal no encontrada o inactiva con id: " + id));
 
         existente.setNombre(sucursal.getNombre());
         existente.setDireccion(sucursal.getDireccion());
@@ -51,9 +53,10 @@ public class SucursalService implements ISucursalService {
 
     @Override
     public void delete(Long id) {
-        if (!sucursalRepository.existsById(id)) {
-            throw new IllegalArgumentException("Sucursal no encontrada con id: " + id);
-        }
-        sucursalRepository.deleteById(id);
+        Sucursal sucursal = sucursalRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Sucursal no encontrada con id: " + id));
+
+        sucursal.setActivo(false);
+        sucursalRepository.save(sucursal);
     }
 }
