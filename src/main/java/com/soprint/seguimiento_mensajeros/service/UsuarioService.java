@@ -92,6 +92,7 @@ public class UsuarioService implements IUsuarioService {
         existente.username = usuario.username;
         existente.correo = usuario.correo;
         existente.estado = usuario.estado;
+        existente.fotoPerfil = usuario.fotoPerfil;
 
         // Buscar Sucursal y Rol de la base de datos para evitar
         // TransientPropertyValueException
