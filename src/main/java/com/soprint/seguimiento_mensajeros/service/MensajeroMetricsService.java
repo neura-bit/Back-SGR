@@ -1,5 +1,6 @@
 package com.soprint.seguimiento_mensajeros.service;
 
+import com.soprint.seguimiento_mensajeros.DTO.ComparacionMensualDTO;
 import com.soprint.seguimiento_mensajeros.DTO.MensajeroMetricsDTO;
 import com.soprint.seguimiento_mensajeros.model.Usuario;
 import com.soprint.seguimiento_mensajeros.repository.TareaRepository;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -180,5 +182,94 @@ public class MensajeroMetricsService {
                 return mensajero != null
                                 && mensajero.getSucursal() != null
                                 && mensajero.getSucursal().getIdSucursal().equals(idSucursal);
+        }
+
+        /**
+         * Compara el rendimiento de un mensajero entre un rango de meses.
+         * 
+         * @param idMensajero ID del mensajero
+         * @param mesInicio   Mes de inicio (ej: 2024-01)
+         * @param mesFin      Mes de fin (ej: 2024-03)
+         * @return DTO con métricas de comparación y detalle mes a mes
+         */
+        public ComparacionMensualDTO getComparacionMensual(Long idMensajero, YearMonth mesInicio, YearMonth mesFin) {
+                // Validar que mesInicio <= mesFin
+                if (mesInicio.isAfter(mesFin)) {
+                        throw new IllegalArgumentException("El mes de inicio no puede ser posterior al mes de fin");
+                }
+
+                // Obtener información del mensajero
+                Usuario mensajero = usuarioRepository.findById(idMensajero)
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                                "Mensajero no encontrado con id: " + idMensajero));
+
+                // Calcular métricas para cada mes en el rango
+                List<ComparacionMensualDTO.DetalleMes> detalleMeses = new ArrayList<>();
+                YearMonth mesActual = mesInicio;
+                Double cumplimientoAnterior = null;
+
+                while (!mesActual.isAfter(mesFin)) {
+                        LocalDate primerDiaMes = mesActual.atDay(1);
+                        LocalDate ultimoDiaMes = mesActual.atEndOfMonth();
+
+                        // Reutilizar el método existente para obtener métricas del mes
+                        MensajeroMetricsDTO metricasMes = getMetricasMensajero(idMensajero, primerDiaMes, ultimoDiaMes);
+
+                        // Calcular cambio vs mes anterior
+                        Double cambioVsAnterior = null;
+                        if (cumplimientoAnterior != null && metricasMes.getPorcentajeCumplimiento() != null) {
+                                cambioVsAnterior = Math.round(
+                                                (metricasMes.getPorcentajeCumplimiento() - cumplimientoAnterior)
+                                                                * 100.0)
+                                                / 100.0;
+                        }
+
+                        ComparacionMensualDTO.DetalleMes detalle = new ComparacionMensualDTO.DetalleMes(
+                                        mesActual,
+                                        metricasMes.getPorcentajeCumplimiento(),
+                                        metricasMes.getTareasCompletadas(),
+                                        cambioVsAnterior);
+                        detalleMeses.add(detalle);
+
+                        cumplimientoAnterior = metricasMes.getPorcentajeCumplimiento();
+                        mesActual = mesActual.plusMonths(1);
+                }
+
+                // Obtener métricas del primer y último mes
+                ComparacionMensualDTO.DetalleMes primerMes = detalleMeses.get(0);
+                ComparacionMensualDTO.DetalleMes ultimoMes = detalleMeses.get(detalleMeses.size() - 1);
+
+                // Calcular cambio total
+                Double cambioRendimiento = 0.0;
+                String tendencia = "SIN_CAMBIO";
+
+                if (primerMes.getPorcentajeCumplimiento() != null && ultimoMes.getPorcentajeCumplimiento() != null) {
+                        cambioRendimiento = Math.round(
+                                        (ultimoMes.getPorcentajeCumplimiento() - primerMes.getPorcentajeCumplimiento())
+                                                        * 100.0)
+                                        / 100.0;
+
+                        if (cambioRendimiento > 0) {
+                                tendencia = "MEJORA";
+                        } else if (cambioRendimiento < 0) {
+                                tendencia = "EMPEORAMIENTO";
+                        }
+                }
+
+                // Construir DTO de respuesta
+                ComparacionMensualDTO dto = new ComparacionMensualDTO();
+                dto.setIdMensajero(idMensajero);
+                dto.setNombreMensajero(mensajero.getNombre());
+                dto.setMesInicio(mesInicio);
+                dto.setMesFin(mesFin);
+                dto.setPorcentajeCumplimientoInicial(primerMes.getPorcentajeCumplimiento());
+                dto.setTareasCompletadasInicial(primerMes.getTareasCompletadas());
+                dto.setPorcentajeCumplimientoFinal(ultimoMes.getPorcentajeCumplimiento());
+                dto.setTareasCompletadasFinal(ultimoMes.getTareasCompletadas());
+                dto.setCambioRendimiento(cambioRendimiento);
+                dto.setTendencia(tendencia);
+                dto.setDetalleMeses(detalleMeses);
+
+                return dto;
         }
 }

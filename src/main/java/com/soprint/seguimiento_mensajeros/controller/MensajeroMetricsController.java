@@ -1,5 +1,6 @@
 package com.soprint.seguimiento_mensajeros.controller;
 
+import com.soprint.seguimiento_mensajeros.DTO.ComparacionMensualDTO;
 import com.soprint.seguimiento_mensajeros.DTO.MensajeroMetricsDTO;
 import com.soprint.seguimiento_mensajeros.service.MensajeroMetricsService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -8,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 
 /**
@@ -120,5 +122,28 @@ public class MensajeroMetricsController {
         List<MensajeroMetricsDTO> metricas = metricsService.getComparativoMensajerosPorSucursal(idSucursal, fechaInicio,
                 fechaFin);
         return ResponseEntity.ok(metricas);
+    }
+
+    // ===== ENDPOINT DE COMPARACIÓN MENSUAL =====
+
+    /**
+     * Compara el rendimiento de un mensajero entre meses seleccionados.
+     * Devuelve el porcentaje de mejora o empeoramiento.
+     * 
+     * Ejemplo: GET
+     * /api/metricas/mensajeros/1/comparacion-mensual?mesInicio=2024-01&mesFin=2024-03
+     */
+    @GetMapping("/{idMensajero}/comparacion-mensual")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
+    public ResponseEntity<ComparacionMensualDTO> getComparacionMensual(
+            @PathVariable Long idMensajero,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth mesInicio,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth mesFin) {
+        try {
+            ComparacionMensualDTO comparacion = metricsService.getComparacionMensual(idMensajero, mesInicio, mesFin);
+            return ResponseEntity.ok(comparacion);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
