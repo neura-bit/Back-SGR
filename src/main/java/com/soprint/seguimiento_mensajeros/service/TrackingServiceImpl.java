@@ -79,7 +79,9 @@ public class TrackingServiceImpl implements TrackingService {
 
     @Override
     public List<PosicionMensajeroResponse> obtenerPosicionesActuales() {
-        List<PosicionMensajeroActual> posiciones = posicionActualRepository.findAll();
+        LocalDateTime inicioDia = java.time.LocalDate.now().atStartOfDay();
+        List<PosicionMensajeroActual> posiciones = posicionActualRepository
+                .findByFechaUltimaActualizacionAfter(inicioDia);
 
         return posiciones.stream()
                 .map(pos -> {
