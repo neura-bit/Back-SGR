@@ -7,6 +7,7 @@ import com.soprint.seguimiento_mensajeros.model.Tarea;
 import com.soprint.seguimiento_mensajeros.model.Usuario;
 import com.soprint.seguimiento_mensajeros.repository.ClienteRepository;
 import com.soprint.seguimiento_mensajeros.repository.TareaRepository;
+import com.soprint.seguimiento_mensajeros.repository.TipoOperacionRepository;
 import com.soprint.seguimiento_mensajeros.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,13 +23,16 @@ public class TareaService implements ITareaService {
 
     private final TareaRepository tareaRepository;
     private final ClienteRepository clienteRepository;
+    private final TipoOperacionRepository tipoOperacionRepository;
     private final UsuarioRepository usuarioRepository;
     private final WebhookService webhookService;
 
     public TareaService(TareaRepository tareaRepository, ClienteRepository clienteRepository,
-            UsuarioRepository usuarioRepository, WebhookService webhookService) {
+            TipoOperacionRepository tipoOperacionRepository, UsuarioRepository usuarioRepository,
+            WebhookService webhookService) {
         this.tareaRepository = tareaRepository;
         this.clienteRepository = clienteRepository;
+        this.tipoOperacionRepository = tipoOperacionRepository;
         this.usuarioRepository = usuarioRepository;
         this.webhookService = webhookService;
     }
@@ -67,9 +71,26 @@ public class TareaService implements ITareaService {
 
     /**
      * Envía notificación por webhook cuando se crea una tarea.
+     * Solo se envía si el tipo de operación es "Entrega".
      */
     private void enviarWebhookTareaCreada(Tarea tarea) {
         try {
+            // Verificar si el tipo de operación es "Entrega"
+            if (tarea.getTipoOperacion() == null || tarea.getTipoOperacion().getIdTipoOperacion() == null) {
+                return;
+            }
+
+            // Obtener el tipo de operación completo
+            var tipoOperacion = tipoOperacionRepository.findById(tarea.getTipoOperacion().getIdTipoOperacion())
+                    .orElse(null);
+
+            // Solo enviar webhook si es tipo "Entrega"
+            if (tipoOperacion == null || !"Entrega".equalsIgnoreCase(tipoOperacion.getNombre())) {
+                System.out.println("Webhook no enviado: Tipo de operación no es 'Entrega' (es: " +
+                        (tipoOperacion != null ? tipoOperacion.getNombre() : "null") + ")");
+                return;
+            }
+
             // Obtener información del cliente
             Cliente cliente = null;
             if (tarea.getCliente() != null && tarea.getCliente().getIdCliente() != null) {
