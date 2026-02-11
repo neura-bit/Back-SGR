@@ -68,8 +68,19 @@ jobs:
     needs: build-and-push
 
     steps:
-      - name: Checkout repository (para copiar docker-compose.test.yml)
+      - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Copy docker-compose.test.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          password: ${{ secrets.HOSTINGER_PASSWORD }}
+          port: ${{ secrets.HOSTINGER_SSH_PORT }}
+          source: "docker-compose.test.yml"
+          target: "$HOME/BackSeguimientoMensajeros-TEST"
+          strip_components: 0
 
       - name: Deploy TEST to Hostinger via SSH
         uses: appleboy/ssh-action@v1.0.3
@@ -87,45 +98,10 @@ jobs:
             cd "$HOME/BackSeguimientoMensajeros-TEST"
 
             echo "==> Reescribiendo archivo .env"
-            cat > .env << 'EOF'
-            SPRING_DATASOURCE_URL_TEST=${{ secrets.SPRING_DATASOURCE_URL_TEST }}
-            SPRING_DATASOURCE_USERNAME_TEST=${{ secrets.SPRING_DATASOURCE_USERNAME_TEST }}
-            SPRING_DATASOURCE_PASSWORD_TEST=${{ secrets.SPRING_DATASOURCE_PASSWORD_TEST }}
-            EOF
+            printf 'SPRING_DATASOURCE_URL_TEST=%s\nSPRING_DATASOURCE_USERNAME_TEST=%s\nSPRING_DATASOURCE_PASSWORD_TEST=%s\n' '${{ secrets.SPRING_DATASOURCE_URL_TEST }}' '${{ secrets.SPRING_DATASOURCE_USERNAME_TEST }}' '${{ secrets.SPRING_DATASOURCE_PASSWORD_TEST }}' > .env
 
-            echo "==> Copiando docker-compose.test.yml"
-            cat > docker-compose.yml << 'COMPOSE_EOF'
-            version: "3.9"
-
-            services:
-              seguimiento-mensajeros-test:
-                container_name: seguimiento-mensajeros-test
-                image: ghcr.io/neura-bit/back-sgr:test-latest
-                restart: unless-stopped
-
-                ports:
-                  - "8081:8080"
-
-                volumes:
-                  - ./uploads-test:/app/uploads
-
-                environment:
-                  TZ: "America/Guayaquil"
-                  SERVER_PORT: "8080"
-                  SPRING_PROFILES_ACTIVE: "test"
-                  FILE_UPLOAD_DIR: "/app/uploads"
-
-                  SPRING_DATASOURCE_URL_TEST: "${SPRING_DATASOURCE_URL_TEST}"
-                  SPRING_DATASOURCE_USERNAME_TEST: "${SPRING_DATASOURCE_USERNAME_TEST}"
-                  SPRING_DATASOURCE_PASSWORD_TEST: "${SPRING_DATASOURCE_PASSWORD_TEST}"
-
-                healthcheck:
-                  test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
-                  interval: 20s
-                  timeout: 5s
-                  retries: 6
-                  start_period: 40s
-            COMPOSE_EOF
+            echo "==> Renombrando compose file"
+            mv -f docker-compose.test.yml docker-compose.yml
 
             echo "==> Haciendo pull de la última imagen TEST"
             docker compose pull seguimiento-mensajeros-test || true
