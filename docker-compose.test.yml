@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  seguimiento-mensajeros-test:
+    container_name: seguimiento-mensajeros-test
+    image: ghcr.io/neura-bit/back-sgr:test-latest
+    restart: unless-stopped
+
+    ports:
+      - "8081:8080"
+
+    volumes:
+      - ./uploads-test:/app/uploads
+
+    environment:
+      TZ: "America/Guayaquil"
+      SERVER_PORT: "8080"
+      SPRING_PROFILES_ACTIVE: "test"
+      FILE_UPLOAD_DIR: "/app/uploads"
+
+      SPRING_DATASOURCE_URL_TEST: "${SPRING_DATASOURCE_URL_TEST}"
+      SPRING_DATASOURCE_USERNAME_TEST: "${SPRING_DATASOURCE_USERNAME_TEST}"
+      SPRING_DATASOURCE_PASSWORD_TEST: "${SPRING_DATASOURCE_PASSWORD_TEST}"
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 6
+      start_period: 40s
