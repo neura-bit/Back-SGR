@@ -103,6 +103,9 @@ jobs:
             echo "==> Renombrando compose file"
             mv -f docker-compose.test.yml docker-compose.yml
 
+            echo "==> Deteniendo contenedor anterior (si existe)"
+            docker compose down || true
+
             echo "==> Haciendo pull de la última imagen TEST"
             docker compose pull seguimiento-mensajeros-test || true
 
