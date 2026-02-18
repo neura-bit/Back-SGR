@@ -53,8 +53,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // MENSAJERO - Can only view their own tasks
+                        // MENSAJERO - Can only view their own tasks and update FCM token
                         .requestMatchers(HttpMethod.GET, "/api/tareas/mis-tareas").hasAnyRole("MENSAJERO", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/usuarios/*/fcm-token")
+                        .hasAnyRole("MENSAJERO", "ADMIN", "ASESOR")
 
                         // ASESOR - Can assign tasks
                         .requestMatchers(HttpMethod.PUT, "/api/tareas/*/asignar").hasAnyRole("ASESOR", "ADMIN")
@@ -68,7 +70,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/usuarios/**").hasAnyRole("ADMIN", "ASESOR")
                         .requestMatchers("/api/roles/**").hasRole("ADMIN")
                         .requestMatchers("/api/sucursales/**").hasRole("ADMIN")
-                        .requestMatchers("/api/categorias/**").hasAnyRole("ADMIN","ASESOR")
+                        .requestMatchers("/api/categorias/**").hasAnyRole("ADMIN", "ASESOR")
                         .requestMatchers("/api/estados-tarea/**").hasRole("ADMIN")
                         .requestMatchers("/api/tipos-operacion/**").hasRole("ADMIN")
                         .requestMatchers("/api/clientes/**").hasAnyRole("ADMIN", "ASESOR")
@@ -106,10 +108,11 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Origins allowed (frontend)
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000","https://sgr.srv1070869.hstgr.cloud"));
+        configuration.setAllowedOrigins(
+                List.of("http://localhost:5173", "http://localhost:3000", "https://sgr.srv1070869.hstgr.cloud"));
 
         // Allowed methods
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
         // Allowed headers
         configuration.setAllowedHeaders(List.of("*"));
