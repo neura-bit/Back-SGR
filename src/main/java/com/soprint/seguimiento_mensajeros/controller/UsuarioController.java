@@ -60,22 +60,14 @@ public class UsuarioController {
 
     @PatchMapping("/{id}/fcm-token")
     public ResponseEntity<Void> actualizarFcmToken(@PathVariable Long id, @RequestBody String token) {
-        System.out.println("Solicitud recibida para actualizar FCM Token. Usuario ID: " + id);
-        System.out.println("Token recibido (raw): " + token);
         try {
             // El token puede venir con comillas si es JSON string simple, limpiarlo si es
             // necesario
             String cleanToken = token.replace("\"", "");
-            System.out.println("Token limpio: " + cleanToken);
             usuarioService.updateFcmToken(id, cleanToken);
             return ResponseEntity.ok().build();
         } catch (IllegalArgumentException error) {
-            System.err.println("Error actualizando token: " + error.getMessage());
             return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            System.err.println("Excepción inesperada actualizando token: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
         }
     }
 }
