@@ -98,7 +98,7 @@ jobs:
             cd "$HOME/BackSeguimientoMensajeros-TEST"
 
             echo "==> Reescribiendo archivo .env"
-            printf 'SPRING_DATASOURCE_URL_TEST=%s\nSPRING_DATASOURCE_USERNAME_TEST=%s\nSPRING_DATASOURCE_PASSWORD_TEST=%s\n' '${{ secrets.SPRING_DATASOURCE_URL_TEST }}' '${{ secrets.SPRING_DATASOURCE_USERNAME_TEST }}' '${{ secrets.SPRING_DATASOURCE_PASSWORD_TEST }}' > .env
+            printf 'SPRING_DATASOURCE_URL_TEST=%s\nSPRING_DATASOURCE_USERNAME_TEST=%s\nSPRING_DATASOURCE_PASSWORD_TEST=%s\nFIREBASE_SERVICE_ACCOUNT_BASE64=%s\n' '${{ secrets.SPRING_DATASOURCE_URL_TEST }}' '${{ secrets.SPRING_DATASOURCE_USERNAME_TEST }}' '${{ secrets.SPRING_DATASOURCE_PASSWORD_TEST }}' '${{ secrets.FIREBASE_SERVICE_ACCOUNT_BASE64 }}' > .env
 
             echo "==> Renombrando compose file"
             mv -f docker-compose.test.yml docker-compose.yml
