@@ -28,6 +28,9 @@ public class Usuario {
     @Column(length = 500)
     public String fotoPerfil;
 
+    @Column(name = "fcm_token", length = 500)
+    public String fcmToken;
+
     public Long getIdUsuario() {
         return idUsuario;
     }
@@ -124,8 +127,17 @@ public class Usuario {
         this.fotoPerfil = fotoPerfil;
     }
 
+    public String getFcmToken() {
+        return fcmToken;
+    }
+
+    public void setFcmToken(String fcmToken) {
+        this.fcmToken = fcmToken;
+    }
+
     public Usuario(Long idUsuario, String nombre, String apellido, String telefono, String username, String password,
-            String correo, Boolean estado, LocalDateTime fechaCreacion, Sucursal sucursal, Rol rol, String fotoPerfil) {
+            String correo, Boolean estado, LocalDateTime fechaCreacion, Sucursal sucursal, Rol rol, String fotoPerfil,
+            String fcmToken) {
         this.idUsuario = idUsuario;
         this.nombre = nombre;
         this.apellido = apellido;
@@ -138,6 +150,7 @@ public class Usuario {
         this.sucursal = sucursal;
         this.rol = rol;
         this.fotoPerfil = fotoPerfil;
+        this.fcmToken = fcmToken;
     }
 
     public Usuario() {

@@ -34,3 +34,4 @@ build/
 
 ### Test Environment ###
 uploads-test/
+serviceAccountKey.json

@@ -57,4 +57,17 @@ public class UsuarioController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PatchMapping("/{id}/fcm-token")
+    public ResponseEntity<Void> actualizarFcmToken(@PathVariable Long id, @RequestBody String token) {
+        try {
+            // El token puede venir con comillas si es JSON string simple, limpiarlo si es
+            // necesario
+            String cleanToken = token.replace("\"", "");
+            usuarioService.updateFcmToken(id, cleanToken);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException error) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }

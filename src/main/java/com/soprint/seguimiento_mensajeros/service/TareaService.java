@@ -26,15 +26,17 @@ public class TareaService implements ITareaService {
     private final TipoOperacionRepository tipoOperacionRepository;
     private final UsuarioRepository usuarioRepository;
     private final WebhookService webhookService;
+    private final FCMService fcmService;
 
     public TareaService(TareaRepository tareaRepository, ClienteRepository clienteRepository,
             TipoOperacionRepository tipoOperacionRepository, UsuarioRepository usuarioRepository,
-            WebhookService webhookService) {
+            WebhookService webhookService, FCMService fcmService) {
         this.tareaRepository = tareaRepository;
         this.clienteRepository = clienteRepository;
         this.tipoOperacionRepository = tipoOperacionRepository;
         this.usuarioRepository = usuarioRepository;
         this.webhookService = webhookService;
+        this.fcmService = fcmService;
     }
 
     @Override
@@ -66,7 +68,30 @@ public class TareaService implements ITareaService {
         // Enviar webhook con información de la tarea y cliente
         enviarWebhookTareaCreada(tareaGuardada);
 
+        // Enviar notificación push si hay mensajero asignado
+        enviarNotificacionAsignacion(tareaGuardada);
+
         return tareaGuardada;
+    }
+
+    /**
+     * Envía notificación FCM al mensajero asignado.
+     */
+    private void enviarNotificacionAsignacion(Tarea tarea) {
+        try {
+            if (tarea.getMensajeroAsignado() != null && tarea.getMensajeroAsignado().getIdUsuario() != null) {
+                Usuario mensajero = usuarioRepository.findById(tarea.getMensajeroAsignado().getIdUsuario())
+                        .orElse(null);
+                if (mensajero != null && mensajero.getFcmToken() != null && !mensajero.getFcmToken().isEmpty()) {
+                    fcmService.sendNotification(
+                            mensajero.getFcmToken(),
+                            "Nueva Tarea Asignada",
+                            "Se te ha asignado la tarea: " + tarea.getNombre());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error enviando notificación FCM: " + e.getMessage());
+        }
     }
 
     /**
@@ -220,10 +245,26 @@ public class TareaService implements ITareaService {
         existente.setCliente(tarea.getCliente());
         existente.setEstadoTarea(tarea.getEstadoTarea());
         existente.setAsesorCrea(tarea.getAsesorCrea());
+
+        // Detectar cambio de mensajero para notificar
+        boolean cambioMensajero = false;
+        if (tarea.getMensajeroAsignado() != null &&
+                (existente.getMensajeroAsignado() == null ||
+                        !existente.getMensajeroAsignado().getIdUsuario()
+                                .equals(tarea.getMensajeroAsignado().getIdUsuario()))) {
+            cambioMensajero = true;
+        }
+
         existente.setMensajeroAsignado(tarea.getMensajeroAsignado());
         existente.setSupervisorAsigna(tarea.getSupervisorAsigna());
 
-        return tareaRepository.save(existente);
+        Tarea guardada = tareaRepository.save(existente);
+
+        if (cambioMensajero) {
+            enviarNotificacionAsignacion(guardada);
+        }
+
+        return guardada;
     }
 
     @Override
@@ -258,7 +299,11 @@ public class TareaService implements ITareaService {
         mensajero.setIdUsuario(idMensajero);
 
         tarea.setMensajeroAsignado(mensajero);
-        return tareaRepository.save(tarea);
+        Tarea guardada = tareaRepository.save(tarea);
+
+        enviarNotificacionAsignacion(guardada);
+
+        return guardada;
     }
 
     @Override
@@ -271,7 +316,11 @@ public class TareaService implements ITareaService {
         mensajero.setIdUsuario(idMensajero);
 
         tarea.setMensajeroAsignado(mensajero);
-        return tareaRepository.save(tarea);
+        Tarea guardada = tareaRepository.save(tarea);
+
+        enviarNotificacionAsignacion(guardada);
+
+        return guardada;
     }
 
     @Override

@@ -16,4 +16,6 @@ public interface IUsuarioService {
     Usuario update(Long id, Usuario usuario);
 
     void delete(Long id);
+
+    void updateFcmToken(Long id, String token);
 }

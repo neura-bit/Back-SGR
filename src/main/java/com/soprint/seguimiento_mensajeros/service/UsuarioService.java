@@ -125,4 +125,12 @@ public class UsuarioService implements IUsuarioService {
         }
         usuarioRepository.deleteById(id);
     }
+
+    @Override
+    public void updateFcmToken(Long id, String token) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con id: " + id));
+        usuario.setFcmToken(token);
+        usuarioRepository.save(usuario);
+    }
 }
