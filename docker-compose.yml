@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   seguimiento-mensajeros:
     container_name: seguimiento-mensajeros
@@ -12,7 +10,6 @@ services:
     environment:
       TZ: "America/Guayaquil"
       SERVER_PORT: "8080"
-      SPRING_PROFILES_ACTIVE: "prod"
       FILE_UPLOAD_DIR: "/app/uploads"
 
       SPRING_DATASOURCE_URL: "${SPRING_DATASOURCE_URL}"
@@ -26,19 +23,15 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=n8n_evoapi"
-
-      # Router
       - "traefik.http.routers.seguim.rule=Host(`${API_HOST_SEGUIM}`)"
       - "traefik.http.routers.seguim.entrypoints=websecure"
       - "traefik.http.routers.seguim.tls=true"
       - "traefik.http.routers.seguim.tls.certresolver=${TRAEFIK_RESOLVER}"
-
-      # Service
       - "traefik.http.routers.seguim.service=seguim-svc"
       - "traefik.http.services.seguim-svc.loadbalancer.server.port=8080"
 
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8080/actuator/health" ]
       interval: 20s
       timeout: 5s
       retries: 6
