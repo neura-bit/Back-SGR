@@ -58,22 +58,23 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/usuarios/*/fcm-token")
                         .hasAnyRole("MENSAJERO", "ADMIN", "ASESOR")
 
-                        // ASESOR - Can assign tasks
+                        // ASESOR y SUPERVISOR - Can assign, create and edit tasks
                         .requestMatchers(HttpMethod.PUT, "/api/tareas/*/asignar").hasAnyRole("ASESOR", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/tareas").hasAnyRole("ASESOR", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/tareas").hasAnyRole("ASESOR", "ADMIN", "SUPERVISOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/tareas/*").hasAnyRole("ASESOR", "ADMIN", "SUPERVISOR")
 
                         // SUPERVISOR - Can reassign courier
                         .requestMatchers(HttpMethod.PUT, "/api/tareas/*/reasignar-mensajero")
                         .hasAnyRole("SUPERVISOR", "ADMIN")
 
-                        // ADMIN - Full access to all endpoints
-                        .requestMatchers("/api/usuarios/**").hasAnyRole("ADMIN", "ASESOR")
+                        // ADMIN, ASESOR, and SUPERVISOR - Access to master data
+                        .requestMatchers("/api/usuarios/**").hasAnyRole("ADMIN", "ASESOR", "SUPERVISOR")
                         .requestMatchers("/api/roles/**").hasRole("ADMIN")
                         .requestMatchers("/api/sucursales/**").hasRole("ADMIN")
-                        .requestMatchers("/api/categorias/**").hasAnyRole("ADMIN", "ASESOR")
+                        .requestMatchers("/api/categorias/**").hasAnyRole("ADMIN", "ASESOR", "SUPERVISOR")
                         .requestMatchers("/api/estados-tarea/**").hasRole("ADMIN")
                         .requestMatchers("/api/tipos-operacion/**").hasRole("ADMIN")
-                        .requestMatchers("/api/clientes/**").hasAnyRole("ADMIN", "ASESOR")
+                        .requestMatchers("/api/clientes/**").hasAnyRole("ADMIN", "ASESOR", "SUPERVISOR")
 
                         // All other endpoints require authentication
                         .requestMatchers("/api/**").authenticated()
