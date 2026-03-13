@@ -32,7 +32,9 @@ public class FileStorageService {
             "image/jpeg",
             "image/jpg",
             "image/png",
-            "image/gif");
+            "image/gif",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 
     @PostConstruct
     public void init() {
@@ -60,7 +62,7 @@ public class FileStorageService {
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_MIME_TYPES.contains(contentType.toLowerCase())) {
             throw new IllegalArgumentException(
-                    "Tipo de archivo no permitido. Tipos aceptados: PDF, JPEG, PNG, GIF");
+                    "Tipo de archivo no permitido. Tipos aceptados: PDF, JPEG, PNG, GIF, DOC, DOCX");
         }
 
         try {
