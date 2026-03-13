@@ -18,10 +18,31 @@ public class WebhookService {
     private static final String WEBHOOK_URL = "https://n8n.srv1070869.hstgr.cloud/webhook/8b0b6048-78f7-45ee-b923-48d8ac2eb81d";
     private static final String WEBHOOK_TAREA_FINALIZADA_URL = "https://n8n.srv1070869.hstgr.cloud/webhook/notificacion-tarea-completada";
 
+    private static final String WEBHOOK_OFICINA_URL = "https://n8n.srv1070869.hstgr.cloud/webhook/notificacion-tarea";
+
     private final RestTemplate restTemplate;
 
     public WebhookService() {
         this.restTemplate = new RestTemplate();
+    }
+
+    /**
+     * Envía una notificación webhook cuando se asigna o reasigna una tarea de oficina.
+     */
+    @Async
+    public void enviarNotificacionOficina(com.soprint.seguimiento_mensajeros.DTO.NotificacionOficinaWebhookPayload payload) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<com.soprint.seguimiento_mensajeros.DTO.NotificacionOficinaWebhookPayload> request = new HttpEntity<>(payload, headers);
+
+            restTemplate.postForEntity(WEBHOOK_OFICINA_URL, request, String.class);
+
+            System.out.println("Webhook de oficina enviado exitosamente para tarea: " + payload.getNombreTarea());
+        } catch (Exception e) {
+            System.err.println("Error al enviar webhook de oficina: " + e.getMessage());
+        }
     }
 
     /**

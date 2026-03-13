@@ -1,5 +1,6 @@
 package com.soprint.seguimiento_mensajeros.service;
 
+import com.soprint.seguimiento_mensajeros.DTO.NotificacionOficinaWebhookPayload;
 import com.soprint.seguimiento_mensajeros.model.EstadoTareaOficina;
 import com.soprint.seguimiento_mensajeros.model.TareaOficina;
 import com.soprint.seguimiento_mensajeros.model.Usuario;
@@ -26,6 +27,9 @@ public class TareaOficinaService implements ITareaOficinaService {
     @Autowired
     private FCMService fcmService;
 
+    @Autowired
+    private WebhookService webhookService;
+
     @Override
     public List<TareaOficina> findAll() {
         return tareaOficinaRepository.findAll();
@@ -42,10 +46,11 @@ public class TareaOficinaService implements ITareaOficinaService {
         tareaOficina.setEstado(EstadoTareaOficina.PENDIENTE);
 
         // Cargar los usuarios completos de la BD antes de guardar para el JSON
+        Usuario creadorCompleto = null;
         if (tareaOficina.getCreador() != null && tareaOficina.getCreador().getIdUsuario() != null) {
-            Usuario creador = usuarioRepository.findById(tareaOficina.getCreador().getIdUsuario())
+            creadorCompleto = usuarioRepository.findById(tareaOficina.getCreador().getIdUsuario())
                     .orElseThrow(() -> new RuntimeException("Creador no encontrado"));
-            tareaOficina.setCreador(creador);
+            tareaOficina.setCreador(creadorCompleto);
         }
 
         Usuario responsableCompleto = null;
@@ -57,13 +62,17 @@ public class TareaOficinaService implements ITareaOficinaService {
 
         TareaOficina savedTarea = tareaOficinaRepository.save(tareaOficina);
 
-        // Notificar al responsable
-        if (responsableCompleto != null && responsableCompleto.getFcmToken() != null
-                && !responsableCompleto.getFcmToken().isEmpty()) {
-            fcmService.sendNotification(
-                    responsableCompleto.getFcmToken(),
-                    "Nueva Tarea Creada",
-                    "Te han asignado la tarea: " + savedTarea.getNombre());
+        // Notificar al responsable vía Webhook
+        if (responsableCompleto != null) {
+            NotificacionOficinaWebhookPayload payload = new NotificacionOficinaWebhookPayload(
+                    responsableCompleto.getNombre(), // Suponiendo que la entidad Usuario tiene un método getNombre
+                    creadorCompleto != null ? creadorCompleto.getNombre() : "Desconocido",
+                    savedTarea.getNombre(),
+                    savedTarea.getDescripcion(),
+                    responsableCompleto.getTelefono(), // Suponiendo getTelefono
+                    responsableCompleto.getCorreo() // Suponiendo getCorreo
+            );
+            webhookService.enviarNotificacionOficina(payload);
         }
 
         return savedTarea;
@@ -85,12 +94,17 @@ public class TareaOficinaService implements ITareaOficinaService {
 
                 Usuario nuevoResponsable = usuarioRepository.findById(tareaDetails.getResponsable().getIdUsuario())
                         .orElse(null);
-                if (nuevoResponsable != null && nuevoResponsable.getFcmToken() != null
-                        && !nuevoResponsable.getFcmToken().isEmpty()) {
-                    fcmService.sendNotification(
-                            nuevoResponsable.getFcmToken(),
-                            "Tarea Reasignada",
-                            "Se te ha reasignado la tarea: " + tarea.getNombre());
+                if (nuevoResponsable != null) {
+                    Usuario creador = tarea.getCreador();
+                    NotificacionOficinaWebhookPayload payload = new NotificacionOficinaWebhookPayload(
+                            nuevoResponsable.getNombre(),
+                            creador != null ? creador.getNombre() : "Desconocido",
+                            tarea.getNombre(),
+                            tarea.getDescripcion(),
+                            nuevoResponsable.getTelefono(),
+                            nuevoResponsable.getCorreo()
+                    );
+                    webhookService.enviarNotificacionOficina(payload);
                 }
             }
 
