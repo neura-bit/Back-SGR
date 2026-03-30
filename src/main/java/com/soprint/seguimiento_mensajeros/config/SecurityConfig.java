@@ -68,6 +68,7 @@ public class SecurityConfig {
                         .hasAnyRole("SUPERVISOR", "ADMIN")
 
                         // ADMIN, ASESOR, and SUPERVISOR - Access to master data
+                        .requestMatchers(HttpMethod.GET, "/api/usuarios/**").hasAnyRole("ADMIN", "ASESOR", "SUPERVISOR", "MENSAJERO")
                         .requestMatchers("/api/usuarios/**").hasAnyRole("ADMIN", "ASESOR", "SUPERVISOR")
                         .requestMatchers("/api/roles/**").hasRole("ADMIN")
                         .requestMatchers("/api/sucursales/**").hasRole("ADMIN")
