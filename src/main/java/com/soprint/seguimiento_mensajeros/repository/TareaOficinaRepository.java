@@ -23,4 +23,7 @@ public interface TareaOficinaRepository extends JpaRepository<TareaOficina, Long
     // Buscar tareas creadas por un usuario con paginación
     Page<TareaOficina> findByCreadorIdUsuario(Long idCreador, Pageable pageable);
 
+    // Buscar tareas entre dos fechas de creación
+    List<TareaOficina> findByFechaCreacionBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
+
 }

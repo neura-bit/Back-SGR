@@ -156,4 +156,9 @@ public class TareaOficinaService implements ITareaOficinaService {
             return savedTarea;
         }).orElseThrow(() -> new RuntimeException("Tarea de oficina no encontrada con el id " + idTarea));
     }
+
+    @Override
+    public List<TareaOficina> findByFechaCreacionBetween(LocalDateTime start, LocalDateTime end) {
+        return tareaOficinaRepository.findByFechaCreacionBetween(start, end);
+    }
 }
