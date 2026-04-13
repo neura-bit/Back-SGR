@@ -497,8 +497,8 @@ public class TareaService implements ITareaService {
         }
 
         double distanciaMetros = calcularDistancia(latitud, longitud, cliente.getLatitud(), cliente.getLongitud());
-        if (distanciaMetros > 10.0) {
-            throw new IllegalStateException(String.format("Estás a %.0f metros. Debes estar a 10 metros o menos del destino para finalizar la entrega.", distanciaMetros));
+        if (distanciaMetros > 30.0) {
+            throw new IllegalStateException(String.format("Estás a %.0f metros. Debes estar a 30 metros o menos del destino para finalizar la entrega.", distanciaMetros));
         }
 
         // Si cumple, cerramos igual que sin código
