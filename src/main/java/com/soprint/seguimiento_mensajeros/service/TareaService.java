@@ -485,4 +485,41 @@ public class TareaService implements ITareaService {
         // 5. Guardar y retornar
         return tareaRepository.save(tarea);
     }
+
+    @Override
+    public Tarea finalizarTareaConProximidad(Long idTarea, Double latitud, Double longitud, Long idEstadoTarea, String observacion) {
+        Tarea tarea = tareaRepository.findById(idTarea)
+                .orElseThrow(() -> new IllegalArgumentException("Tarea no encontrada con id: " + idTarea));
+
+        Cliente cliente = tarea.getCliente();
+        if (cliente == null || cliente.getLatitud() == null || cliente.getLongitud() == null) {
+            throw new IllegalStateException("El cliente no tiene coordenadas registradas para validar la proximidad.");
+        }
+
+        double distanciaMetros = calcularDistancia(latitud, longitud, cliente.getLatitud(), cliente.getLongitud());
+        if (distanciaMetros > 10.0) {
+            throw new IllegalStateException(String.format("Estás a %.0f metros. Debes estar a 10 metros o menos del destino para finalizar la entrega.", distanciaMetros));
+        }
+
+        // Si cumple, cerramos igual que sin código
+        return finalizarTareaSinCodigo(idTarea, idEstadoTarea, observacion);
+    }
+
+    /**
+     * Calcula la distancia en metros entre dos coordenadas geográficas usando la fórmula de Haversine.
+     */
+    private double calcularDistancia(double lat1, double lon1, double lat2, double lon2) {
+        final int R = 6371; // Radio de la tierra en kilometros
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        double distance = R * c * 1000; // Convertir a metros
+        return distance;
+    }
 }

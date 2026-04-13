@@ -196,6 +196,35 @@ public class TareaController {
         }
     }
 
+    // PUT /api/tareas/{id}/finalizar-con-proximidad - Finaliza una tarea validando coordenadas
+    @PutMapping("/{id}/finalizar-con-proximidad")
+    @PreAuthorize("hasAnyRole('MENSAJERO', 'ADMIN')")
+    public ResponseEntity<?> finalizarTareaConProximidad(
+            @PathVariable Long id,
+            @RequestBody com.soprint.seguimiento_mensajeros.DTO.FinalizarConProximidadRequest request) {
+        try {
+            if (request.getLatitudMensajero() == null || request.getLongitudMensajero() == null) {
+                return ResponseEntity.badRequest().body("Las coordenadas de latitud y longitud son requeridas");
+            }
+            if (request.getIdEstadoTarea() == null) {
+                return ResponseEntity.badRequest().body("El estado de la tarea es requerido");
+            }
+
+            Tarea tareaFinalizada = tareaService.finalizarTareaConProximidad(
+                    id, 
+                    request.getLatitudMensajero(), 
+                    request.getLongitudMensajero(), 
+                    request.getIdEstadoTarea(), 
+                    request.getObservacion()
+            );
+            return ResponseEntity.ok(tareaFinalizada);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     // POST /api/tareas/{id}/reenviar-codigo - Reenvía código y datos del cliente al
     // webhook
     @PostMapping("/{id}/reenviar-codigo")
