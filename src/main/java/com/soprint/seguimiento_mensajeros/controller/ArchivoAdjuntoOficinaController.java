@@ -1,10 +1,12 @@
 package com.soprint.seguimiento_mensajeros.controller;
 
 import com.soprint.seguimiento_mensajeros.model.ArchivoAdjuntoOficina;
+import com.soprint.seguimiento_mensajeros.DTO.UploadResultDTO;
 import com.soprint.seguimiento_mensajeros.service.IArchivoAdjuntoOficinaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,13 +24,16 @@ public class ArchivoAdjuntoOficinaController {
     private IArchivoAdjuntoOficinaService archivoAdjuntoService;
 
     @PostMapping("/upload/{idTareaOficina}")
-    public ResponseEntity<ArchivoAdjuntoOficina> uploadFile(@RequestParam("file") MultipartFile file,
+    public ResponseEntity<UploadResultDTO> uploadFiles(@RequestParam("file") List<MultipartFile> files,
             @PathVariable Long idTareaOficina) {
-        try {
-            ArchivoAdjuntoOficina archivo = archivoAdjuntoService.uploadFile(file, idTareaOficina);
-            return ResponseEntity.ok(archivo);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+        UploadResultDTO resultado = archivoAdjuntoService.uploadFiles(files, idTareaOficina);
+
+        if (resultado.getTotalFallidos() == 0) {
+            return ResponseEntity.ok(resultado);
+        } else if (resultado.getTotalExitosos() > 0) {
+            return ResponseEntity.status(HttpStatus.MULTI_STATUS).body(resultado);
+        } else {
+            return ResponseEntity.badRequest().body(resultado);
         }
     }
 

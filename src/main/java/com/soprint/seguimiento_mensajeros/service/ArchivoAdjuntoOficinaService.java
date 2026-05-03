@@ -2,6 +2,7 @@ package com.soprint.seguimiento_mensajeros.service;
 
 import com.soprint.seguimiento_mensajeros.model.ArchivoAdjuntoOficina;
 import com.soprint.seguimiento_mensajeros.model.TareaOficina;
+import com.soprint.seguimiento_mensajeros.DTO.UploadResultDTO;
 import com.soprint.seguimiento_mensajeros.repository.ArchivoAdjuntoOficinaRepository;
 import com.soprint.seguimiento_mensajeros.repository.TareaOficinaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -45,6 +47,28 @@ public class ArchivoAdjuntoOficinaService implements IArchivoAdjuntoOficinaServi
         archivoAdjunto.setFechaSubida(LocalDateTime.now());
 
         return archivoAdjuntoRepository.save(archivoAdjunto);
+    }
+
+    @Override
+    public UploadResultDTO uploadFiles(List<MultipartFile> files, Long idTareaOficina) {
+        UploadResultDTO resultado = new UploadResultDTO();
+        resultado.setTotalRecibidos(files.size());
+
+        for (MultipartFile file : files) {
+            try {
+                ArchivoAdjuntoOficina archivosGuardado = uploadFile(file, idTareaOficina);
+                resultado.getArchivosSubidos().add(archivosGuardado);
+            } catch (Exception e) {
+                String nombreArchivo = file.getOriginalFilename() != null ? file.getOriginalFilename() : "desconocido";
+                resultado.getArchivosFallidos().add(
+                        new UploadResultDTO.ArchivoErrorDTO(nombreArchivo, e.getMessage()));
+            }
+        }
+
+        resultado.setTotalExitosos(resultado.getArchivosSubidos().size());
+        resultado.setTotalFallidos(resultado.getArchivosFallidos().size());
+
+        return resultado;
     }
 
     @Override

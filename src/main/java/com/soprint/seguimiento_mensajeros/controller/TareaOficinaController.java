@@ -22,7 +22,13 @@ public class TareaOficinaController {
     private ITareaOficinaService tareaOficinaService;
 
     @GetMapping
-    public ResponseEntity<List<TareaOficina>> getAll() {
+    public ResponseEntity<List<TareaOficina>> getAll(
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime fechaInicio,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME) java.time.LocalDateTime fechaFin) {
+        
+        if (fechaInicio != null && fechaFin != null) {
+            return ResponseEntity.ok(tareaOficinaService.findByFechaCreacionBetween(fechaInicio, fechaFin));
+        }
         return ResponseEntity.ok(tareaOficinaService.findAll());
     }
 

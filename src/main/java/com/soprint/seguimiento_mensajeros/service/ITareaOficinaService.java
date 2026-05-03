@@ -35,4 +35,7 @@ public interface ITareaOficinaService {
     // Completar tarea
     TareaOficina completarTarea(Long idTarea);
 
+    // Obtener tareas en un rango de fechas
+    List<TareaOficina> findByFechaCreacionBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
+
 }
