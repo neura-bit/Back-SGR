@@ -32,6 +32,8 @@ public interface ITareaService {
 
     Tarea finalizarTareaSinCodigo(Long idTarea, Long idEstadoTarea, String observacion);
 
+    Tarea finalizarTareaConProximidad(Long idTarea, Double latitud, Double longitud, Long idEstadoTarea, String observacion);
+
     void reenviarCodigoTarea(Long idTarea);
 
     // Buscar tareas por rango de fechas
