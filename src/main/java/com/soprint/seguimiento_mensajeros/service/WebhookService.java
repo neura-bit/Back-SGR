@@ -32,6 +32,13 @@ public class WebhookService {
     @Async
     public void enviarNotificacionOficina(com.soprint.seguimiento_mensajeros.DTO.NotificacionOficinaWebhookPayload payload) {
         try {
+            // WhatsApp no permite saltos de línea, tabs ni +4 espacios en las variables
+            // de una plantilla. Saneamos los campos de texto libre antes de enviar.
+            payload.setNombreTarea(sanitizarParametroWhatsapp(payload.getNombreTarea()));
+            payload.setDescripcionTarea(sanitizarParametroWhatsapp(payload.getDescripcionTarea()));
+            payload.setNombreResponsable(sanitizarParametroWhatsapp(payload.getNombreResponsable()));
+            payload.setNombreCreador(sanitizarParametroWhatsapp(payload.getNombreCreador()));
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -91,5 +98,32 @@ public class WebhookService {
             // Log del error pero no interrumpir el flujo principal
             System.err.println("Error al enviar webhook de tarea finalizada: " + e.getMessage());
         }
+    }
+
+    /**
+     * Limpia un texto para que pueda usarse de forma segura como parámetro tanto
+     * en el body JSON de n8n como en una plantilla de WhatsApp. Neutraliza:
+     *
+     * <ul>
+     *   <li>Saltos de línea, retornos de carro y tabulaciones -> un espacio.
+     *       (WhatsApp Cloud API rechaza con #132018 las variables con \n/\t).</li>
+     *   <li>Comillas dobles -> comilla simple. Una " sin escapar rompe el JSON
+     *       que n8n construye a mano ("JSON parameter needs to be valid JSON").</li>
+     *   <li>Barra invertida -> barra normal. Un \ suelto también invalida el JSON.</li>
+     *   <li>Espacios repetidos -> un solo espacio (WhatsApp prohíbe +4 seguidos).</li>
+     * </ul>
+     *
+     * @param texto El texto original (puede ser null)
+     * @return El texto saneado en una sola línea, o cadena vacía si era null
+     */
+    private static String sanitizarParametroWhatsapp(String texto) {
+        if (texto == null) {
+            return "";
+        }
+        return texto.replaceAll("[\\r\\n\\t]+", " ")
+                .replace('"', '\'')
+                .replace('\\', '/')
+                .replaceAll(" {2,}", " ")
+                .trim();
     }
 }
