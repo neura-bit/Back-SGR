@@ -163,7 +163,8 @@ public class TareaController {
                     id,
                     request.getCodigo(),
                     request.getIdEstadoTarea(),
-                    request.getObservacion());
+                    request.getObservacion(),
+                    request.getTipoVehiculo());
             return ResponseEntity.ok(tareaFinalizada);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
@@ -189,7 +190,19 @@ public class TareaController {
                 return ResponseEntity.badRequest().body("El estado de la tarea es requerido");
             }
 
-            Tarea tareaFinalizada = tareaService.finalizarTareaSinCodigo(id, idEstadoTarea, observacion);
+            // El vehículo llega como texto y debe coincidir con el enum
+            com.soprint.seguimiento_mensajeros.model.TipoVehiculo tipoVehiculo = null;
+            Object tipoVehiculoRaw = body.get("tipoVehiculo");
+            if (tipoVehiculoRaw != null) {
+                try {
+                    tipoVehiculo = com.soprint.seguimiento_mensajeros.model.TipoVehiculo
+                            .valueOf(tipoVehiculoRaw.toString());
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().body("Tipo de vehículo no válido: " + tipoVehiculoRaw);
+                }
+            }
+
+            Tarea tareaFinalizada = tareaService.finalizarTareaSinCodigo(id, idEstadoTarea, observacion, tipoVehiculo);
             return ResponseEntity.ok(tareaFinalizada);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
@@ -212,10 +225,11 @@ public class TareaController {
 
             Tarea tareaFinalizada = tareaService.finalizarTareaConProximidad(
                     id, 
-                    request.getLatitudMensajero(), 
-                    request.getLongitudMensajero(), 
-                    request.getIdEstadoTarea(), 
-                    request.getObservacion()
+                    request.getLatitudMensajero(),
+                    request.getLongitudMensajero(),
+                    request.getIdEstadoTarea(),
+                    request.getObservacion(),
+                    request.getTipoVehiculo()
             );
             return ResponseEntity.ok(tareaFinalizada);
         } catch (IllegalArgumentException e) {

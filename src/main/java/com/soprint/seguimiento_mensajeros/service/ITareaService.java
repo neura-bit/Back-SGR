@@ -28,11 +28,14 @@ public interface ITareaService {
 
     Tarea reasignarMensajero(Long idTarea, Long idMensajero);
 
-    Tarea finalizarTarea(Long idTarea, String codigo, Long idEstadoTarea, String observacion);
+    Tarea finalizarTarea(Long idTarea, String codigo, Long idEstadoTarea, String observacion,
+            com.soprint.seguimiento_mensajeros.model.TipoVehiculo tipoVehiculo);
 
-    Tarea finalizarTareaSinCodigo(Long idTarea, Long idEstadoTarea, String observacion);
+    Tarea finalizarTareaSinCodigo(Long idTarea, Long idEstadoTarea, String observacion,
+            com.soprint.seguimiento_mensajeros.model.TipoVehiculo tipoVehiculo);
 
-    Tarea finalizarTareaConProximidad(Long idTarea, Double latitud, Double longitud, Long idEstadoTarea, String observacion);
+    Tarea finalizarTareaConProximidad(Long idTarea, Double latitud, Double longitud, Long idEstadoTarea,
+            String observacion, com.soprint.seguimiento_mensajeros.model.TipoVehiculo tipoVehiculo);
 
     void reenviarCodigoTarea(Long idTarea);
 

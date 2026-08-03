@@ -95,6 +95,14 @@ public class Tarea {
     @Column(name = "justificacion_caso_especial", length = 1000)
     private String justificacionCasoEspecial;
 
+    /**
+     * Vehículo con el que se realizó la tarea. Lo indica el mensajero al
+     * finalizar; queda null en las tareas anteriores a esta funcionalidad.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_vehiculo", length = 30)
+    private TipoVehiculo tipoVehiculo;
+
     @Column(name = "fecha_inicio")
     private LocalDateTime fechaInicio;
 
@@ -235,6 +243,14 @@ public class Tarea {
 
     public void setComentario(String comentario) {
         this.comentario = comentario;
+    }
+
+    public TipoVehiculo getTipoVehiculo() {
+        return tipoVehiculo;
+    }
+
+    public void setTipoVehiculo(TipoVehiculo tipoVehiculo) {
+        this.tipoVehiculo = tipoVehiculo;
     }
 
     public Boolean getCasoEspecial() {

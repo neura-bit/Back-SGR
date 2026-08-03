@@ -67,6 +67,10 @@ public class TareaResponse {
     private Boolean casoEspecial;
     private String justificacionCasoEspecial;
 
+    // Vehículo con el que el mensajero realizó la tarea
+    private String tipoVehiculo;
+    private String tipoVehiculoEtiqueta;
+
     // Archivos adjuntos
     private List<ArchivoAdjuntoResponse> archivosAdjuntos;
 
@@ -147,6 +151,11 @@ public class TareaResponse {
         dto.proceso = tarea.getProceso();
         dto.casoEspecial = Boolean.TRUE.equals(tarea.getCasoEspecial());
         dto.justificacionCasoEspecial = tarea.getJustificacionCasoEspecial();
+
+        if (tarea.getTipoVehiculo() != null) {
+            dto.tipoVehiculo = tarea.getTipoVehiculo().name();
+            dto.tipoVehiculoEtiqueta = tarea.getTipoVehiculo().getEtiqueta();
+        }
 
         // Archivos adjuntos
         if (tarea.getArchivosAdjuntos() != null) {
@@ -329,6 +338,14 @@ public class TareaResponse {
 
     public String getProceso() {
         return proceso;
+    }
+
+    public String getTipoVehiculo() {
+        return tipoVehiculo;
+    }
+
+    public String getTipoVehiculoEtiqueta() {
+        return tipoVehiculoEtiqueta;
     }
 
     public Boolean getCasoEspecial() {

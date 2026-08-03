@@ -356,10 +356,14 @@ public class TareaService implements ITareaService {
     }
 
     @Override
-    public Tarea finalizarTarea(Long idTarea, String codigo, Long idEstadoTarea, String observacion) {
+    public Tarea finalizarTarea(Long idTarea, String codigo, Long idEstadoTarea, String observacion,
+            com.soprint.seguimiento_mensajeros.model.TipoVehiculo tipoVehiculo) {
         // 1. Buscar la tarea
         Tarea tarea = tareaRepository.findById(idTarea)
                 .orElseThrow(() -> new IllegalArgumentException("Tarea no encontrada con id: " + idTarea));
+
+        validarTipoVehiculo(tipoVehiculo);
+        tarea.setTipoVehiculo(tipoVehiculo);
 
         // 2. Validar el código
         if (codigo == null || !codigo.equals(tarea.getCodigo())) {
@@ -409,10 +413,14 @@ public class TareaService implements ITareaService {
     }
 
     @Override
-    public Tarea finalizarTareaSinCodigo(Long idTarea, Long idEstadoTarea, String observacion) {
+    public Tarea finalizarTareaSinCodigo(Long idTarea, Long idEstadoTarea, String observacion,
+            com.soprint.seguimiento_mensajeros.model.TipoVehiculo tipoVehiculo) {
         // 1. Buscar la tarea
         Tarea tarea = tareaRepository.findById(idTarea)
                 .orElseThrow(() -> new IllegalArgumentException("Tarea no encontrada con id: " + idTarea));
+
+        validarTipoVehiculo(tipoVehiculo);
+        tarea.setTipoVehiculo(tipoVehiculo);
 
         // 2. Establecer fecha de finalización
         LocalDateTime fechaFin = LocalDateTime.now();
@@ -519,9 +527,13 @@ public class TareaService implements ITareaService {
     }
 
     @Override
-    public Tarea finalizarTareaConProximidad(Long idTarea, Double latitud, Double longitud, Long idEstadoTarea, String observacion) {
+    public Tarea finalizarTareaConProximidad(Long idTarea, Double latitud, Double longitud, Long idEstadoTarea,
+            String observacion, com.soprint.seguimiento_mensajeros.model.TipoVehiculo tipoVehiculo) {
         Tarea tarea = tareaRepository.findById(idTarea)
                 .orElseThrow(() -> new IllegalArgumentException("Tarea no encontrada con id: " + idTarea));
+
+        validarTipoVehiculo(tipoVehiculo);
+        tarea.setTipoVehiculo(tipoVehiculo);
 
         Cliente cliente = tarea.getCliente();
         if (cliente == null || cliente.getLatitud() == null || cliente.getLongitud() == null) {
@@ -538,7 +550,17 @@ public class TareaService implements ITareaService {
         }
 
         // Si cumple, cerramos igual que sin código
-        return finalizarTareaSinCodigo(idTarea, idEstadoTarea, observacion);
+        return finalizarTareaSinCodigo(idTarea, idEstadoTarea, observacion, tipoVehiculo);
+    }
+
+    /**
+     * El vehículo con el que se realizó la tarea es obligatorio al finalizar,
+     * para que el dato quede completo y sea utilizable en los reportes.
+     */
+    private void validarTipoVehiculo(com.soprint.seguimiento_mensajeros.model.TipoVehiculo tipoVehiculo) {
+        if (tipoVehiculo == null) {
+            throw new IllegalStateException("Debes indicar el vehículo con el que realizaste la tarea");
+        }
     }
 
     /**

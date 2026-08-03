@@ -10,6 +10,8 @@ public class FinalizarTareaRequest {
     private String codigo; // Código de 4 dígitos para validar
     private Long idEstadoTarea; // Nuevo estado de la tarea
     private String observacion; // Observación del mensajero
+    // Vehículo usado para realizar la tarea
+    private com.soprint.seguimiento_mensajeros.model.TipoVehiculo tipoVehiculo;
 
     public FinalizarTareaRequest() {
     }
@@ -42,5 +44,13 @@ public class FinalizarTareaRequest {
 
     public void setObservacion(String observacion) {
         this.observacion = observacion;
+    }
+
+    public com.soprint.seguimiento_mensajeros.model.TipoVehiculo getTipoVehiculo() {
+        return tipoVehiculo;
+    }
+
+    public void setTipoVehiculo(com.soprint.seguimiento_mensajeros.model.TipoVehiculo tipoVehiculo) {
+        this.tipoVehiculo = tipoVehiculo;
     }
 }
