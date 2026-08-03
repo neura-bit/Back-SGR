@@ -1,10 +1,12 @@
 package com.soprint.seguimiento_mensajeros.service;
 
 import com.soprint.seguimiento_mensajeros.model.Cliente;
+import com.soprint.seguimiento_mensajeros.model.Usuario;
 import com.soprint.seguimiento_mensajeros.repository.ClienteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,13 +33,21 @@ public class ClienteService implements IClienteService {
     }
 
     @Override
-    public Cliente create(Cliente cliente) {
+    public Cliente create(Cliente cliente, Usuario autor) {
         cliente.setIdCliente(null); // que se genere el ID
+
+        // La autoría se toma siempre del usuario autenticado, nunca del cuerpo
+        // de la petición, para que no pueda falsearse.
+        cliente.setCreadoPor(autor);
+        cliente.setFechaCreacion(LocalDateTime.now());
+        cliente.setModificadoPor(null);
+        cliente.setFechaModificacion(null);
+
         return clienteRepository.save(cliente);
     }
 
     @Override
-    public Cliente update(Long id, Cliente cliente) {
+    public Cliente update(Long id, Cliente cliente, Usuario autor) {
         Cliente existente = clienteRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado con id: " + id));
 
@@ -51,6 +61,10 @@ public class ClienteService implements IClienteService {
         existente.setLongitud(cliente.getLongitud());
         existente.setDetalle(cliente.getDetalle());
         existente.setCorreo(cliente.getCorreo());
+
+        // El creador original se conserva; solo se registra la última modificación
+        existente.setModificadoPor(autor);
+        existente.setFechaModificacion(LocalDateTime.now());
 
         return clienteRepository.save(existente);
     }

@@ -1,6 +1,9 @@
 package com.soprint.seguimiento_mensajeros.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 public class Cliente {
@@ -16,6 +19,62 @@ public class Cliente {
     private Double longitud;
     private String detalle;
     private String correo;
+
+    // Auditoría. Se marcan con @JsonIgnore por dos motivos: evitar que el
+    // usuario completo (incluida su contraseña) viaje en las respuestas, y
+    // evitar que estos campos puedan falsearse desde el cuerpo de la petición.
+    // Para exponerlos se usa ClienteResponse.
+    // EAGER a propósito: en el perfil de producción open-in-view está en false,
+    // por lo que una relación LAZY fallaría al mapearse fuera de la transacción.
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_creado_por")
+    @JsonIgnore
+    private Usuario creadoPor;
+
+    @Column(name = "fecha_creacion")
+    @JsonIgnore
+    private LocalDateTime fechaCreacion;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_modificado_por")
+    @JsonIgnore
+    private Usuario modificadoPor;
+
+    @Column(name = "fecha_modificacion")
+    @JsonIgnore
+    private LocalDateTime fechaModificacion;
+
+    public Usuario getCreadoPor() {
+        return creadoPor;
+    }
+
+    public void setCreadoPor(Usuario creadoPor) {
+        this.creadoPor = creadoPor;
+    }
+
+    public LocalDateTime getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(LocalDateTime fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public Usuario getModificadoPor() {
+        return modificadoPor;
+    }
+
+    public void setModificadoPor(Usuario modificadoPor) {
+        this.modificadoPor = modificadoPor;
+    }
+
+    public LocalDateTime getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(LocalDateTime fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
+    }
 
     public Long getIdCliente() {
         return idCliente;
