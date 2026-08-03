@@ -63,6 +63,10 @@ public class TareaResponse {
     private String observacion;
     private String proceso;
 
+    // Caso especial (tarea asignada fuera del horario de cierre habitual)
+    private Boolean casoEspecial;
+    private String justificacionCasoEspecial;
+
     // Archivos adjuntos
     private List<ArchivoAdjuntoResponse> archivosAdjuntos;
 
@@ -141,6 +145,8 @@ public class TareaResponse {
         dto.comentario = tarea.getComentario();
         dto.observacion = tarea.getObservacion();
         dto.proceso = tarea.getProceso();
+        dto.casoEspecial = Boolean.TRUE.equals(tarea.getCasoEspecial());
+        dto.justificacionCasoEspecial = tarea.getJustificacionCasoEspecial();
 
         // Archivos adjuntos
         if (tarea.getArchivosAdjuntos() != null) {
@@ -323,6 +329,14 @@ public class TareaResponse {
 
     public String getProceso() {
         return proceso;
+    }
+
+    public Boolean getCasoEspecial() {
+        return casoEspecial;
+    }
+
+    public String getJustificacionCasoEspecial() {
+        return justificacionCasoEspecial;
     }
 
     public List<ArchivoAdjuntoResponse> getArchivosAdjuntos() {

@@ -56,6 +56,8 @@ public class TareaService implements ITareaService {
         tarea.setIdTarea(null); // que el ID lo genere la BD
         tarea.setFechaCreacion(LocalDateTime.now()); // fecha de creación automática
 
+        normalizarCasoEspecial(tarea);
+
         // Autogenerar código de 4 dígitos
         String nuevoCodigo = generarNuevoCodigo();
         tarea.setCodigo(nuevoCodigo);
@@ -72,6 +74,30 @@ public class TareaService implements ITareaService {
         enviarNotificacionAsignacion(tareaGuardada);
 
         return tareaGuardada;
+    }
+
+    /**
+     * Valida y normaliza la marca de caso especial.
+     *
+     * Si la tarea se marca como caso especial la justificación es obligatoria;
+     * si no lo es, se descarta cualquier texto que venga para no dejar
+     * justificaciones huérfanas de tareas normales.
+     */
+    private void normalizarCasoEspecial(Tarea tarea) {
+        boolean esCasoEspecial = Boolean.TRUE.equals(tarea.getCasoEspecial());
+        tarea.setCasoEspecial(esCasoEspecial);
+
+        if (!esCasoEspecial) {
+            tarea.setJustificacionCasoEspecial(null);
+            return;
+        }
+
+        String justificacion = tarea.getJustificacionCasoEspecial();
+        if (justificacion == null || justificacion.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "La justificación es obligatoria cuando la tarea se marca como caso especial");
+        }
+        tarea.setJustificacionCasoEspecial(justificacion.trim());
     }
 
     /**
@@ -238,6 +264,12 @@ public class TareaService implements ITareaService {
         existente.setProceso(tarea.getProceso());
         existente.setFechaInicio(tarea.getFechaInicio());
         existente.setCodigo(tarea.getCodigo());
+
+        // La marca de caso especial es editable, pero pasa por la misma
+        // validación que al crear para que no quede sin justificación
+        existente.setCasoEspecial(tarea.getCasoEspecial());
+        existente.setJustificacionCasoEspecial(tarea.getJustificacionCasoEspecial());
+        normalizarCasoEspecial(existente);
 
         // Relaciones
         existente.setTipoOperacion(tarea.getTipoOperacion());

@@ -81,6 +81,20 @@ public class Tarea {
     @Column(name = "proceso", length = 255)
     private String proceso;
 
+    /**
+     * Marca las tareas asignadas fuera de los horarios de cierre habituales.
+     * La marca es manual: la decide quien crea la tarea, no se deduce de la
+     * hora, porque los cierres se gestionan de forma interna.
+     */
+    // Sin NOT NULL: agregar una columna obligatoria a una tabla con filas
+    // existentes falla en PostgreSQL. El servicio normaliza el valor a false.
+    @Column(name = "caso_especial", columnDefinition = "boolean default false")
+    private Boolean casoEspecial = false;
+
+    /** Obligatoria cuando casoEspecial es true. */
+    @Column(name = "justificacion_caso_especial", length = 1000)
+    private String justificacionCasoEspecial;
+
     @Column(name = "fecha_inicio")
     private LocalDateTime fechaInicio;
 
@@ -221,6 +235,22 @@ public class Tarea {
 
     public void setComentario(String comentario) {
         this.comentario = comentario;
+    }
+
+    public Boolean getCasoEspecial() {
+        return casoEspecial;
+    }
+
+    public void setCasoEspecial(Boolean casoEspecial) {
+        this.casoEspecial = casoEspecial;
+    }
+
+    public String getJustificacionCasoEspecial() {
+        return justificacionCasoEspecial;
+    }
+
+    public void setJustificacionCasoEspecial(String justificacionCasoEspecial) {
+        this.justificacionCasoEspecial = justificacionCasoEspecial;
     }
 
     public String getObservacion() {

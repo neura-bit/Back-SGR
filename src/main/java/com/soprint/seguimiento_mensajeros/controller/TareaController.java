@@ -259,6 +259,28 @@ public class TareaController {
         }
     }
 
+    // GET /api/tareas/casos-especiales - Tareas marcadas como caso especial en un
+    // rango de fechas, para la revisión periódica. Solo administradores.
+    @GetMapping("/casos-especiales")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<TareaResponse>> casosEspeciales(
+            @RequestParam String fechaInicio,
+            @RequestParam String fechaFin) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+            LocalDateTime inicio = LocalDateTime.parse(fechaInicio, formatter);
+            LocalDateTime fin = LocalDateTime.parse(fechaFin, formatter);
+
+            List<TareaResponse> tareas = tareaService.findByRangoFechas(inicio, fin).stream()
+                    .filter(t -> Boolean.TRUE.equals(t.getCasoEspecial()))
+                    .map(TareaResponse::fromEntity)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(tareas);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     // GET /api/tareas/mis-tareas-completadas - Obtener tareas COMPLETADAS del
     // mensajero por rango de fechas
     // Ejemplo:
