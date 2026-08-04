@@ -12,6 +12,17 @@ public interface IClienteService {
 
     Optional<Cliente> findById(Long id);
 
+    /**
+     * Clientes ya registrados que se parecen al que se quiere crear, ordenados
+     * del más parecido al menos.
+     *
+     * No impide crear nada: sirve para avisar al asesor y darle la opción de
+     * revisar el cliente existente antes de duplicarlo.
+     *
+     * @param maximo tope de resultados, para no abrumar en pantalla
+     */
+    List<ClienteSimilitud.Coincidencia> buscarSimilares(Cliente candidato, int maximo);
+
     /** @param autor usuario autenticado que registra el cliente; puede ser null. */
     Cliente create(Cliente cliente, Usuario autor);
 

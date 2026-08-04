@@ -15,6 +15,17 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
 
     List<Tarea> findByMensajeroAsignadoIdUsuario(Long idMensajero);
 
+    /**
+     * Cuántas tareas se han registrado contra cada cliente.
+     *
+     * Se usa al avisar de un cliente duplicado: saber que el existente ya
+     * tiene historial ayuda al asesor a decidir si reutilizarlo. Devuelve
+     * pares [idCliente, cantidad] en una sola consulta para no hacer una por
+     * cada candidato.
+     */
+    @Query("SELECT t.cliente.idCliente, COUNT(t) FROM Tarea t WHERE t.cliente.idCliente IN :ids GROUP BY t.cliente.idCliente")
+    List<Object[]> contarPorClientes(@Param("ids") List<Long> ids);
+
     // Método para buscar tareas por mensajero y filtrar por estados específicos
     List<Tarea> findByMensajeroAsignadoIdUsuarioAndEstadoTareaNombreIn(Long idMensajero, List<String> nombresEstado);
 

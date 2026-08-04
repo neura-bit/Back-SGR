@@ -7,8 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -30,6 +33,26 @@ public class ClienteService implements IClienteService {
     @Transactional(readOnly = true)
     public Optional<Cliente> findById(Long id) {
         return clienteRepository.findById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ClienteSimilitud.Coincidencia> buscarSimilares(Cliente candidato, int maximo) {
+        if (candidato == null) {
+            return List.of();
+        }
+        // Se recorre la tabla completa en memoria: son ~1300 clientes y las
+        // reglas (tildes, cédula vs RUC, distancia en metros) no se expresan
+        // bien en SQL. Si la tabla creciera un orden de magnitud habría que
+        // prefiltrar por ciudad o por un bloque del nombre antes de puntuar.
+        return clienteRepository.findAll().stream()
+                // Al editar, el propio cliente no debe contarse como parecido
+                .filter(existente -> !Objects.equals(existente.getIdCliente(), candidato.getIdCliente()))
+                .map(existente -> ClienteSimilitud.comparar(candidato, existente))
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparingInt(ClienteSimilitud.Coincidencia::getPuntaje).reversed())
+                .limit(maximo)
+                .collect(Collectors.toList());
     }
 
     @Override
