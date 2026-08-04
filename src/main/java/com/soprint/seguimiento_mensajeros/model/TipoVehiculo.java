@@ -10,7 +10,8 @@ public enum TipoVehiculo {
     MOTO("Moto"),
     AUTO("Auto"),
     CAMIONETA("Camioneta"),
-    CAMION("Camión");
+    CAMION("Camión"),
+    PIE("A Pie");
 
     private final String etiqueta;
 
