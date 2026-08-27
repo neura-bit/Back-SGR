@@ -1,8 +1,10 @@
 package com.soprint.seguimiento_mensajeros.service;
 
 import com.soprint.seguimiento_mensajeros.DTO.ComparacionMensualDTO;
+import com.soprint.seguimiento_mensajeros.DTO.ComparacionMensualGeneralDTO;
 import com.soprint.seguimiento_mensajeros.DTO.MensajeroMetricsDTO;
 import com.soprint.seguimiento_mensajeros.model.Usuario;
+import com.soprint.seguimiento_mensajeros.repository.SucursalRepository;
 import com.soprint.seguimiento_mensajeros.repository.TareaRepository;
 import com.soprint.seguimiento_mensajeros.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
@@ -24,10 +26,13 @@ public class MensajeroMetricsService {
 
         private final TareaRepository tareaRepository;
         private final UsuarioRepository usuarioRepository;
+        private final SucursalRepository sucursalRepository;
 
-        public MensajeroMetricsService(TareaRepository tareaRepository, UsuarioRepository usuarioRepository) {
+        public MensajeroMetricsService(TareaRepository tareaRepository, UsuarioRepository usuarioRepository,
+                        SucursalRepository sucursalRepository) {
                 this.tareaRepository = tareaRepository;
                 this.usuarioRepository = usuarioRepository;
+                this.sucursalRepository = sucursalRepository;
         }
 
         /**
@@ -271,5 +276,122 @@ public class MensajeroMetricsService {
                 dto.setDetalleMeses(detalleMeses);
 
                 return dto;
+        }
+
+        /**
+         * Compara el rendimiento de toda la operacion entre un rango de meses.
+         *
+         * Es el equivalente agregado de {@link #getComparacionMensual}. La
+         * diferencia que importa esta en como se agrega el cumplimiento: se suman
+         * las entregas a tiempo y las tardias de todos los mensajeros y recien
+         * ahi se divide. Promediar los porcentajes individuales daria otro
+         * numero, porque le daria el mismo peso al mensajero que hizo tres
+         * entregas que al que hizo cincuenta.
+         *
+         * @param idSucursal sucursal a medir, o null para toda la empresa
+         */
+        public ComparacionMensualGeneralDTO getComparacionMensualGeneral(Long idSucursal, YearMonth mesInicio,
+                        YearMonth mesFin) {
+                if (mesInicio.isAfter(mesFin)) {
+                        throw new IllegalArgumentException("El mes de inicio no puede ser posterior al mes de fin");
+                }
+
+                List<ComparacionMensualGeneralDTO.DetalleMesGeneral> detalleMeses = new ArrayList<>();
+                YearMonth mesActual = mesInicio;
+                Double cumplimientoAnterior = null;
+
+                while (!mesActual.isAfter(mesFin)) {
+                        LocalDate primerDiaMes = mesActual.atDay(1);
+                        LocalDate ultimoDiaMes = mesActual.atEndOfMonth();
+
+                        List<MensajeroMetricsDTO> metricasDelMes = idSucursal != null
+                                        ? getComparativoMensajerosPorSucursal(idSucursal, primerDiaMes, ultimoDiaMes)
+                                        : getComparativoMensajeros(primerDiaMes, ultimoDiaMes);
+
+                        int entregasATiempo = 0;
+                        int entregasTardias = 0;
+                        int tareasCompletadas = 0;
+                        int totalTareasAsignadas = 0;
+                        int mensajerosActivos = 0;
+
+                        for (MensajeroMetricsDTO metricas : metricasDelMes) {
+                                entregasATiempo += valor(metricas.getEntregasATiempo());
+                                entregasTardias += valor(metricas.getEntregasTardias());
+                                tareasCompletadas += valor(metricas.getTareasCompletadas());
+
+                                int asignadas = valor(metricas.getTotalTareasAsignadas());
+                                totalTareasAsignadas += asignadas;
+
+                                // Los mensajeros sin tareas ese mes no cuentan como activos:
+                                // incluirlos haria parecer que el equipo crecio o se achico
+                                // cuando en realidad solo cambio quien estuvo de licencia.
+                                if (asignadas > 0) {
+                                        mensajerosActivos++;
+                                }
+                        }
+
+                        int totalEntregas = entregasATiempo + entregasTardias;
+                        Double porcentajeCumplimiento = totalEntregas > 0
+                                        ? Math.round((entregasATiempo * 100.0 / totalEntregas) * 100.0) / 100.0
+                                        : 0.0;
+
+                        Double cambioVsAnterior = null;
+                        if (cumplimientoAnterior != null) {
+                                cambioVsAnterior = Math.round(
+                                                (porcentajeCumplimiento - cumplimientoAnterior) * 100.0) / 100.0;
+                        }
+
+                        detalleMeses.add(new ComparacionMensualGeneralDTO.DetalleMesGeneral(
+                                        mesActual,
+                                        porcentajeCumplimiento,
+                                        tareasCompletadas,
+                                        totalTareasAsignadas,
+                                        entregasATiempo,
+                                        entregasTardias,
+                                        mensajerosActivos,
+                                        cambioVsAnterior));
+
+                        cumplimientoAnterior = porcentajeCumplimiento;
+                        mesActual = mesActual.plusMonths(1);
+                }
+
+                ComparacionMensualGeneralDTO.DetalleMesGeneral primerMes = detalleMeses.get(0);
+                ComparacionMensualGeneralDTO.DetalleMesGeneral ultimoMes = detalleMeses.get(detalleMeses.size() - 1);
+
+                double cambioRendimiento = Math.round(
+                                (ultimoMes.getPorcentajeCumplimiento() - primerMes.getPorcentajeCumplimiento())
+                                                * 100.0)
+                                / 100.0;
+
+                String tendencia = "SIN_CAMBIO";
+                if (cambioRendimiento > 0) {
+                        tendencia = "MEJORA";
+                } else if (cambioRendimiento < 0) {
+                        tendencia = "EMPEORAMIENTO";
+                }
+
+                ComparacionMensualGeneralDTO dto = new ComparacionMensualGeneralDTO();
+                dto.setIdSucursal(idSucursal);
+                dto.setNombreSucursal(idSucursal != null
+                                ? sucursalRepository.findById(idSucursal)
+                                                .map(sucursal -> sucursal.nombre)
+                                                .orElse("Sucursal desconocida")
+                                : "Todas las sucursales");
+                dto.setMesInicio(mesInicio);
+                dto.setMesFin(mesFin);
+                dto.setPorcentajeCumplimientoInicial(primerMes.getPorcentajeCumplimiento());
+                dto.setTareasCompletadasInicial(primerMes.getTareasCompletadas());
+                dto.setPorcentajeCumplimientoFinal(ultimoMes.getPorcentajeCumplimiento());
+                dto.setTareasCompletadasFinal(ultimoMes.getTareasCompletadas());
+                dto.setCambioRendimiento(cambioRendimiento);
+                dto.setTendencia(tendencia);
+                dto.setDetalleMeses(detalleMeses);
+
+                return dto;
+        }
+
+        /** Evita repetir el chequeo de null en cada acumulador. */
+        private int valor(Integer numero) {
+                return numero != null ? numero : 0;
         }
 }

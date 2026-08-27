@@ -1,6 +1,7 @@
 package com.soprint.seguimiento_mensajeros.controller;
 
 import com.soprint.seguimiento_mensajeros.DTO.ComparacionMensualDTO;
+import com.soprint.seguimiento_mensajeros.DTO.ComparacionMensualGeneralDTO;
 import com.soprint.seguimiento_mensajeros.DTO.MensajeroMetricsDTO;
 import com.soprint.seguimiento_mensajeros.service.MensajeroMetricsService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -141,6 +142,32 @@ public class MensajeroMetricsController {
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth mesFin) {
         try {
             ComparacionMensualDTO comparacion = metricsService.getComparacionMensual(idMensajero, mesInicio, mesFin);
+            return ResponseEntity.ok(comparacion);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * Compara el rendimiento de toda la operación entre meses seleccionados.
+     *
+     * Convive con GET /{idMensajero} sin ambigüedad: Spring prioriza los patrones
+     * literales sobre los que llevan variable de ruta, así que
+     * "comparacion-mensual-general" nunca se interpreta como un id de mensajero.
+     *
+     * Ejemplo: GET
+     * /api/metricas/mensajeros/comparacion-mensual-general?mesInicio=2024-01&mesFin=2024-03
+     * y opcionalmente &idSucursal=2 para acotar a una sucursal.
+     */
+    @GetMapping("/comparacion-mensual-general")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
+    public ResponseEntity<ComparacionMensualGeneralDTO> getComparacionMensualGeneral(
+            @RequestParam(required = false) Long idSucursal,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth mesInicio,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth mesFin) {
+        try {
+            ComparacionMensualGeneralDTO comparacion = metricsService.getComparacionMensualGeneral(
+                    idSucursal, mesInicio, mesFin);
             return ResponseEntity.ok(comparacion);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
