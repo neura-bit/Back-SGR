@@ -252,6 +252,31 @@ public class TareaController {
         }
     }
 
+    /**
+     * GET /api/tareas/en-mismo-horario?idCliente=5&fechaLimite=2026-09-01T15:30
+     *
+     * Tareas PENDIENTE que ya ocupan ese horario (±30 min) en la ciudad del
+     * cliente indicado. Se consulta antes de crear, para avisar al asesor;
+     * es solo lectura y no bloquea nada: si devuelve resultados, la web los
+     * muestra y deja crear igual.
+     *
+     * La ciudad no viaja como parámetro: se deduce del cliente en el servidor,
+     * porque `cliente.ciudad` es texto libre y normalizarla en el cliente
+     * abriría la puerta a que dos grafías dejen de coincidir.
+     */
+    @GetMapping("/en-mismo-horario")
+    @PreAuthorize("hasAnyRole('ASESOR', 'ADMIN', 'SUPERVISOR')")
+    public ResponseEntity<List<TareaResponse>> tareasEnMismoHorario(
+            @RequestParam Long idCliente,
+            @RequestParam String fechaLimite) {
+        try {
+            LocalDateTime limite = LocalDateTime.parse(fechaLimite, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+            return ResponseEntity.ok(tareaService.buscarPendientesEnMismoHorario(idCliente, limite));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     // GET /api/tareas/por-fechas - Obtener tareas por rango de fechas
     // Ejemplo:
     // /api/tareas/por-fechas?fechaInicio=2024-01-01T00:00:00&fechaFin=2024-01-31T23:59:59

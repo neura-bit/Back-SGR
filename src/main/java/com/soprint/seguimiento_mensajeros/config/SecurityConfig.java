@@ -60,6 +60,8 @@ public class SecurityConfig {
 
                         // ASESOR y SUPERVISOR - Can assign, create and edit tasks
                         .requestMatchers(HttpMethod.PUT, "/api/tareas/*/asignar").hasAnyRole("ASESOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/tareas/en-mismo-horario")
+                        .hasAnyRole("ASESOR", "ADMIN", "SUPERVISOR")
                         .requestMatchers(HttpMethod.POST, "/api/tareas").hasAnyRole("ASESOR", "ADMIN", "SUPERVISOR")
                         .requestMatchers(HttpMethod.PUT, "/api/tareas/*").hasAnyRole("ASESOR", "ADMIN", "SUPERVISOR")
 
@@ -71,6 +73,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/usuarios/**").hasAnyRole("ADMIN", "ASESOR", "SUPERVISOR", "MENSAJERO")
                         .requestMatchers("/api/usuarios/**").hasAnyRole("ADMIN", "ASESOR", "SUPERVISOR")
                         .requestMatchers("/api/roles/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/sucursales/ciudades")
+                        .hasAnyRole("ADMIN", "ASESOR", "SUPERVISOR")
                         .requestMatchers("/api/sucursales/**").hasRole("ADMIN")
                         .requestMatchers("/api/categorias/**").hasAnyRole("ADMIN", "ASESOR", "SUPERVISOR")
                         .requestMatchers("/api/estados-tarea/**").hasRole("ADMIN")

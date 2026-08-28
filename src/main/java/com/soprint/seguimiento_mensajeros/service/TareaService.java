@@ -1,5 +1,6 @@
 package com.soprint.seguimiento_mensajeros.service;
 
+import com.soprint.seguimiento_mensajeros.DTO.TareaResponse;
 import com.soprint.seguimiento_mensajeros.DTO.TareaWebhookPayload;
 import com.soprint.seguimiento_mensajeros.DTO.TareaFinalizadaWebhookPayload;
 import com.soprint.seguimiento_mensajeros.model.Cliente;
@@ -485,6 +486,42 @@ public class TareaService implements ITareaService {
 
         // 4. Enviar al webhook
         webhookService.enviarNotificacionTareaCreada(payload);
+    }
+
+    /**
+     * Minutos a cada lado de la fecha límite elegida que se consideran "el
+     * mismo horario". Una coincidencia exacta no serviría: los asesores eligen
+     * horas arbitrarias (17:33, 19:44), así que nunca chocarían dos tareas.
+     */
+    private static final long VENTANA_MISMO_HORARIO_MINUTOS = 30;
+
+    /** Único estado que se considera: una tarea ya completada no ocupa horario. */
+    private static final String ESTADO_PENDIENTE = "PENDIENTE";
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TareaResponse> buscarPendientesEnMismoHorario(Long idCliente, LocalDateTime fechaLimite) {
+        if (idCliente == null || fechaLimite == null) {
+            return List.of();
+        }
+
+        Cliente cliente = clienteRepository.findById(idCliente).orElse(null);
+        if (cliente == null || cliente.getCiudad() == null || cliente.getCiudad().trim().isEmpty()) {
+            // Sin ciudad no hay con qué comparar: se avisa de nada en vez de
+            // avisar de todo.
+            return List.of();
+        }
+
+        String ciudad = cliente.getCiudad().trim().toUpperCase();
+        LocalDateTime desde = fechaLimite.minusMinutes(VENTANA_MISMO_HORARIO_MINUTOS);
+        LocalDateTime hasta = fechaLimite.plusMinutes(VENTANA_MISMO_HORARIO_MINUTOS);
+
+        // El mapeo a DTO ocurre dentro de la transacción a propósito: en
+        // producción open-in-view está en false y las relaciones son LAZY.
+        return tareaRepository.buscarPorEstadoCiudadYVentana(ESTADO_PENDIENTE, ciudad, desde, hasta)
+                .stream()
+                .map(TareaResponse::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
     }
 
     @Override

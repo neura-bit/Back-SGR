@@ -40,6 +40,32 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
     List<Tarea> findByMensajeroAsignadoIdUsuarioAndEstadoTareaNombreAndFechaFinBetween(
             Long idMensajero, String estadoNombre, LocalDateTime fechaInicio, LocalDateTime fechaFin);
 
+    /**
+     * Tareas PENDIENTE de una ciudad cuya fecha límite cae dentro de una
+     * ventana de tiempo. Se usa al crear una tarea para avisar que ya hay otra
+     * comprometida en ese mismo horario y ciudad.
+     *
+     * `cliente.ciudad` es texto libre (conviven "Quito", "quito" y "QUITO"),
+     * así que se compara normalizado; el parámetro debe llegar ya en
+     * mayúsculas y sin espacios.
+     *
+     * Los JOIN FETCH evitan el N+1 al construir el TareaResponse: en el perfil
+     * de producción open-in-view está en false y las relaciones son LAZY.
+     */
+    @Query("SELECT t FROM Tarea t " +
+            "JOIN FETCH t.cliente c " +
+            "JOIN FETCH t.estadoTarea e " +
+            "LEFT JOIN FETCH t.tipoOperacion op " +
+            "LEFT JOIN FETCH t.mensajeroAsignado m " +
+            "WHERE e.nombre = :estado " +
+            "AND t.fechaLimite BETWEEN :desde AND :hasta " +
+            "AND UPPER(TRIM(c.ciudad)) = :ciudad " +
+            "ORDER BY t.fechaLimite")
+    List<Tarea> buscarPorEstadoCiudadYVentana(@Param("estado") String estado,
+            @Param("ciudad") String ciudad,
+            @Param("desde") LocalDateTime desde,
+            @Param("hasta") LocalDateTime hasta);
+
     // ===== MÉTODOS PARA MÉTRICAS DE MENSAJEROS =====
 
     // Buscar tareas por mensajero y rango de fechas de creación

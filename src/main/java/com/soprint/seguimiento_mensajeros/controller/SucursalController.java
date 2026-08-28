@@ -23,6 +23,19 @@ public class SucursalController {
         return ResponseEntity.ok(sucursalService.findAll());
     }
 
+    /**
+     * GET /api/sucursales/ciudades
+     *
+     * Solo los nombres de ciudad, para el desplegable del formulario de
+     * cliente. Va aparte del listado completo de sucursales porque ese está
+     * restringido a ADMIN y este lo necesitan también ASESOR y SUPERVISOR,
+     * que son quienes registran clientes. No expone direcciones ni teléfonos.
+     */
+    @GetMapping("/ciudades")
+    public ResponseEntity<List<String>> listarCiudades() {
+        return ResponseEntity.ok(sucursalService.findCiudades());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Sucursal> obtenerPorId(@PathVariable Long id) {
         return sucursalService.findById(id)

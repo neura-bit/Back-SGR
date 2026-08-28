@@ -5,8 +5,11 @@ import com.soprint.seguimiento_mensajeros.repository.SucursalRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -22,6 +25,34 @@ public class SucursalService implements ISucursalService {
     @Transactional(readOnly = true)
     public List<Sucursal> findAll() {
         return sucursalRepository.findByActivoTrue();
+    }
+
+    /**
+     * Solo sucursales activas, igual que findAll: si se da de baja una
+     * sucursal se deja de operar esa ciudad, así que no debe seguir
+     * ofreciéndose al registrar clientes nuevos. Los clientes ya registrados
+     * conservan su ciudad; la web la sigue mostrando aunque no esté en la
+     * lista.
+     *
+     * `sucursal.ciudad` también es texto libre, así que se deduplica sin
+     * distinguir mayúsculas ("Quito" y "quito" son una sola opción) y se
+     * devuelve la forma tal como la escribió el administrador.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> findCiudades() {
+        Map<String, String> porClave = new LinkedHashMap<>();
+        for (Sucursal sucursal : sucursalRepository.findByActivoTrue()) {
+            String ciudad = sucursal.getCiudad();
+            if (ciudad == null || ciudad.trim().isEmpty()) {
+                continue;
+            }
+            String limpia = ciudad.trim();
+            porClave.putIfAbsent(limpia.toUpperCase(), limpia);
+        }
+        return porClave.values().stream()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .collect(Collectors.toList());
     }
 
     @Override

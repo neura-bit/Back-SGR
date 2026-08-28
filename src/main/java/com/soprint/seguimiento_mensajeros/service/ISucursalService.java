@@ -15,5 +15,13 @@ public interface ISucursalService {
 
     Sucursal update(Long id, Sucursal sucursal);
 
+    /**
+     * Ciudades donde la empresa tiene sucursal, sin repetir y ya normalizadas.
+     * Alimenta el desplegable de ciudad del formulario de cliente, para que
+     * `cliente.ciudad` deje de ser texto libre y las tareas se puedan agrupar
+     * por ciudad de forma fiable.
+     */
+    List<String> findCiudades();
+
     void delete(Long id);
 }

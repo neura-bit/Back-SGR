@@ -1,5 +1,6 @@
 package com.soprint.seguimiento_mensajeros.service;
 
+import com.soprint.seguimiento_mensajeros.DTO.TareaResponse;
 import com.soprint.seguimiento_mensajeros.model.Tarea;
 
 import java.time.LocalDateTime;
@@ -45,6 +46,13 @@ public interface ITareaService {
     // Buscar tareas completadas por mensajero y rango de fechas
     List<Tarea> findTareasCompletadasByMensajeroAndFechas(Long idMensajero, LocalDateTime fechaInicio,
             LocalDateTime fechaFin);
+
+    /**
+     * Tareas PENDIENTE que ya ocupan el mismo horario y la misma ciudad que la
+     * tarea que se está por crear. La ciudad se toma del cliente indicado.
+     * Devuelve lista vacía si el cliente no existe o no tiene ciudad cargada.
+     */
+    List<TareaResponse> buscarPendientesEnMismoHorario(Long idCliente, LocalDateTime fechaLimite);
 
     // Iniciar tarea: cambiar estado a EN PROCESO y registrar fecha inicio
     Tarea iniciarTarea(Long idTarea);
