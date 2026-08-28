@@ -54,6 +54,15 @@ public interface ITareaService {
      */
     List<TareaResponse> buscarPendientesEnMismoHorario(Long idCliente, LocalDateTime fechaLimite);
 
+    /**
+     * Tareas marcadas como caso especial creadas dentro del rango.
+     *
+     * Si `ciudad` es null devuelve las de todas las ciudades (vista del
+     * administrador); si trae valor, solo las de esa ciudad, que es lo que le
+     * corresponde al supervisor de esa sucursal.
+     */
+    List<TareaResponse> findCasosEspeciales(LocalDateTime inicio, LocalDateTime fin, String ciudad);
+
     // Iniciar tarea: cambiar estado a EN PROCESO y registrar fecha inicio
     Tarea iniciarTarea(Long idTarea);
 }

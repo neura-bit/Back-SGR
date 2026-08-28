@@ -298,26 +298,61 @@ public class TareaController {
         }
     }
 
-    // GET /api/tareas/casos-especiales - Tareas marcadas como caso especial en un
-    // rango de fechas, para la revisión periódica. Solo administradores.
+    /**
+     * GET /api/tareas/casos-especiales?fechaInicio=...&fechaFin=...
+     *
+     * Tareas marcadas como caso especial dentro del rango.
+     *
+     * El alcance depende de quién pregunta: el ADMIN las ve todas, para la
+     * revisión periódica; el SUPERVISOR ve solo las de la ciudad de su
+     * sucursal, porque hay un supervisor por sucursal y cada uno atiende lo
+     * suyo. La ciudad se deduce del token, no llega por parámetro, para que un
+     * supervisor no pueda consultar la de otra sucursal.
+     */
     @GetMapping("/casos-especiales")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
     public ResponseEntity<List<TareaResponse>> casosEspeciales(
             @RequestParam String fechaInicio,
-            @RequestParam String fechaFin) {
+            @RequestParam String fechaFin,
+            Authentication authentication) {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
             LocalDateTime inicio = LocalDateTime.parse(fechaInicio, formatter);
             LocalDateTime fin = LocalDateTime.parse(fechaFin, formatter);
 
-            List<TareaResponse> tareas = tareaService.findByRangoFechas(inicio, fin).stream()
-                    .filter(t -> Boolean.TRUE.equals(t.getCasoEspecial()))
-                    .map(TareaResponse::fromEntity)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(tareas);
+            if (esAdmin(authentication)) {
+                return ResponseEntity.ok(tareaService.findCasosEspeciales(inicio, fin, null));
+            }
+
+            String ciudad = ciudadDeSuSucursal(authentication);
+            if (ciudad == null) {
+                // Supervisor sin sucursal o sin ciudad cargada: se devuelve
+                // vacío en vez de todo, para no filtrar otras ciudades.
+                return ResponseEntity.ok(List.of());
+            }
+            return ResponseEntity.ok(tareaService.findCasosEspeciales(inicio, fin, ciudad));
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    private boolean esAdmin(Authentication authentication) {
+        return authentication != null && authentication.getAuthorities() != null
+                && authentication.getAuthorities().stream()
+                        .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
+
+    /** Ciudad de la sucursal del usuario autenticado; null si no se puede determinar. */
+    private String ciudadDeSuSucursal(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return null;
+        }
+        Usuario usuario = usuarioRepository.findByUsername(authentication.getName()).orElse(null);
+        if (usuario == null || usuario.getSucursal() == null) {
+            return null;
+        }
+        String ciudad = usuario.getSucursal().getCiudad();
+        return (ciudad == null || ciudad.trim().isEmpty()) ? null : ciudad.trim();
     }
 
     // GET /api/tareas/mis-tareas-completadas - Obtener tareas COMPLETADAS del

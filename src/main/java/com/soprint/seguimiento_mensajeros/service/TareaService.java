@@ -526,6 +526,23 @@ public class TareaService implements ITareaService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<TareaResponse> findCasosEspeciales(LocalDateTime inicio, LocalDateTime fin, String ciudad) {
+        List<Tarea> tareas;
+        if (ciudad == null || ciudad.trim().isEmpty()) {
+            tareas = tareaRepository.buscarCasosEspeciales(inicio, fin);
+        } else {
+            tareas = tareaRepository.buscarCasosEspecialesPorCiudad(inicio, fin, ciudad.trim().toUpperCase());
+        }
+
+        // El mapeo a DTO ocurre dentro de la transacción: en producción
+        // open-in-view está en false y las relaciones de Tarea son LAZY.
+        return tareas.stream()
+                .map(TareaResponse::fromEntity)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Tarea> findByRangoFechas(LocalDateTime fechaInicio, LocalDateTime fechaFin) {
         return tareaRepository.findByFechaCreacionBetween(fechaInicio, fechaFin);
     }

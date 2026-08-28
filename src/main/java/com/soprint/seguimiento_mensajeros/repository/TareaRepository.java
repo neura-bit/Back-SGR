@@ -66,6 +66,45 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
             @Param("desde") LocalDateTime desde,
             @Param("hasta") LocalDateTime hasta);
 
+    /**
+     * Tareas marcadas como caso especial creadas dentro de un rango.
+     *
+     * `caso_especial` admite NULL (la columna se agregó sobre una tabla con
+     * filas existentes), y `= true` las descarta correctamente.
+     */
+    @Query("SELECT t FROM Tarea t " +
+            "JOIN FETCH t.cliente c " +
+            "JOIN FETCH t.estadoTarea e " +
+            "LEFT JOIN FETCH t.tipoOperacion op " +
+            "LEFT JOIN FETCH t.mensajeroAsignado m " +
+            "WHERE t.casoEspecial = true " +
+            "AND t.fechaCreacion BETWEEN :desde AND :hasta " +
+            "ORDER BY t.fechaCreacion DESC")
+    List<Tarea> buscarCasosEspeciales(@Param("desde") LocalDateTime desde,
+            @Param("hasta") LocalDateTime hasta);
+
+    /**
+     * Igual que buscarCasosEspeciales, pero acotado a una ciudad: cada sucursal
+     * tiene su supervisor, y a cada supervisor solo le corresponden los casos
+     * especiales de la ciudad de su sucursal.
+     *
+     * La ciudad debe llegar ya en mayúsculas y sin espacios; se compara
+     * normalizada porque tanto `cliente.ciudad` como `sucursal.ciudad` son
+     * texto libre.
+     */
+    @Query("SELECT t FROM Tarea t " +
+            "JOIN FETCH t.cliente c " +
+            "JOIN FETCH t.estadoTarea e " +
+            "LEFT JOIN FETCH t.tipoOperacion op " +
+            "LEFT JOIN FETCH t.mensajeroAsignado m " +
+            "WHERE t.casoEspecial = true " +
+            "AND t.fechaCreacion BETWEEN :desde AND :hasta " +
+            "AND UPPER(TRIM(c.ciudad)) = :ciudad " +
+            "ORDER BY t.fechaCreacion DESC")
+    List<Tarea> buscarCasosEspecialesPorCiudad(@Param("desde") LocalDateTime desde,
+            @Param("hasta") LocalDateTime hasta,
+            @Param("ciudad") String ciudad);
+
     // ===== MÉTODOS PARA MÉTRICAS DE MENSAJEROS =====
 
     // Buscar tareas por mensajero y rango de fechas de creación
