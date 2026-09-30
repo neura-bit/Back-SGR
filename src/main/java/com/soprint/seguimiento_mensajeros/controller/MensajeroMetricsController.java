@@ -3,6 +3,7 @@ package com.soprint.seguimiento_mensajeros.controller;
 import com.soprint.seguimiento_mensajeros.DTO.ComparacionMensualDTO;
 import com.soprint.seguimiento_mensajeros.DTO.ComparacionMensualGeneralDTO;
 import com.soprint.seguimiento_mensajeros.DTO.MensajeroMetricsDTO;
+import com.soprint.seguimiento_mensajeros.DTO.ReferenciaVehiculosDTO;
 import com.soprint.seguimiento_mensajeros.service.MensajeroMetricsService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -100,7 +101,8 @@ public class MensajeroMetricsController {
             if (!metricsService.mensajeroPerteneceASucursal(idMensajero, idSucursal)) {
                 return ResponseEntity.badRequest().build();
             }
-            MensajeroMetricsDTO metricas = metricsService.getMetricasMensajero(idMensajero, fechaInicio, fechaFin);
+            MensajeroMetricsDTO metricas = metricsService.getMetricasMensajeroEnSucursal(idSucursal, idMensajero,
+                    fechaInicio, fechaFin);
             return ResponseEntity.ok(metricas);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
@@ -123,6 +125,23 @@ public class MensajeroMetricsController {
         List<MensajeroMetricsDTO> metricas = metricsService.getComparativoMensajerosPorSucursal(idSucursal, fechaInicio,
                 fechaFin);
         return ResponseEntity.ok(metricas);
+    }
+
+    /**
+     * Referencia de la flota por vehículo: la base contra la que se evalúa a
+     * cada mensajero en el comparativo del mismo período y alcance.
+     *
+     * Ejemplo: GET
+     * /api/metricas/mensajeros/referencia-vehiculos?fechaInicio=2026-09-01&fechaFin=2026-09-30
+     * y opcionalmente &idSucursal=2 para acotar a una sucursal.
+     */
+    @GetMapping("/referencia-vehiculos")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
+    public ResponseEntity<ReferenciaVehiculosDTO> getReferenciaVehiculos(
+            @RequestParam(required = false) Long idSucursal,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
+        return ResponseEntity.ok(metricsService.getReferenciaVehiculos(idSucursal, fechaInicio, fechaFin));
     }
 
     // ===== ENDPOINT DE COMPARACIÓN MENSUAL =====

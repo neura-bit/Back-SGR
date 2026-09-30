@@ -1,6 +1,7 @@
 package com.soprint.seguimiento_mensajeros.DTO;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 /**
  * DTO para representar las métricas de rendimiento de un mensajero.
@@ -30,6 +31,16 @@ public class MensajeroMetricsDTO {
 
     // Porcentaje de tareas completadas
     private Double porcentajeCompletado;
+
+    // Evaluacion ajustada por vehiculo (ver BaselineVehiculos). Quedan en null
+    // cuando no hay base suficiente para compararlo contra sus pares.
+    private Integer tareasEvaluadasVehiculo;
+    private Double cumplimientoEsperado;
+    private Double diferenciaVsPares;
+    private Double cumplimientoAjustado;
+    private Double indiceEficiencia;
+    // Etiqueta del vehiculo -> tareas finalizadas con el
+    private Map<String, Integer> tareasPorVehiculo;
 
     // Constructor vacío
     public MensajeroMetricsDTO() {
@@ -177,5 +188,52 @@ public class MensajeroMetricsDTO {
 
     public void setPorcentajeCompletado(Double porcentajeCompletado) {
         this.porcentajeCompletado = porcentajeCompletado;
+    }
+    public Integer getTareasEvaluadasVehiculo() {
+        return tareasEvaluadasVehiculo;
+    }
+
+    public void setTareasEvaluadasVehiculo(Integer tareasEvaluadasVehiculo) {
+        this.tareasEvaluadasVehiculo = tareasEvaluadasVehiculo;
+    }
+
+    public Double getCumplimientoEsperado() {
+        return cumplimientoEsperado;
+    }
+
+    public void setCumplimientoEsperado(Double cumplimientoEsperado) {
+        this.cumplimientoEsperado = cumplimientoEsperado;
+    }
+
+    public Double getDiferenciaVsPares() {
+        return diferenciaVsPares;
+    }
+
+    public void setDiferenciaVsPares(Double diferenciaVsPares) {
+        this.diferenciaVsPares = diferenciaVsPares;
+    }
+
+    public Double getCumplimientoAjustado() {
+        return cumplimientoAjustado;
+    }
+
+    public void setCumplimientoAjustado(Double cumplimientoAjustado) {
+        this.cumplimientoAjustado = cumplimientoAjustado;
+    }
+
+    public Double getIndiceEficiencia() {
+        return indiceEficiencia;
+    }
+
+    public void setIndiceEficiencia(Double indiceEficiencia) {
+        this.indiceEficiencia = indiceEficiencia;
+    }
+
+    public Map<String, Integer> getTareasPorVehiculo() {
+        return tareasPorVehiculo;
+    }
+
+    public void setTareasPorVehiculo(Map<String, Integer> tareasPorVehiculo) {
+        this.tareasPorVehiculo = tareasPorVehiculo;
     }
 }
