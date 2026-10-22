@@ -37,6 +37,8 @@ public class MensajeroMetricsDTO {
     // LOGISTICA o TECNICA: el ranking en el que aparece
     private String area;
     private Integer tareasEvaluadas;
+    // Menos tareas que el minimo: nota preliminar, con la diferencia escalada
+    private Boolean pocasTareas;
     private Double cumplimientoEsperado;
     private Double diferenciaVsPares;
     private Double cumplimientoAjustado;
@@ -209,6 +211,14 @@ public class MensajeroMetricsDTO {
 
     public void setTareasEvaluadas(Integer tareasEvaluadas) {
         this.tareasEvaluadas = tareasEvaluadas;
+    }
+
+    public Boolean getPocasTareas() {
+        return pocasTareas;
+    }
+
+    public void setPocasTareas(Boolean pocasTareas) {
+        this.pocasTareas = pocasTareas;
     }
 
     public Double getCumplimientoEsperado() {

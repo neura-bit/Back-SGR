@@ -49,9 +49,12 @@ public final class BaselinePares {
     public static final int MIN_TAREAS_FLOTA = 20;
 
     /**
-     * Tareas del propio mensajero con referencia valida para darle un indice.
-     * Era 5; con septiembre 2026 eso calificaba "Bajo" a alguien con 7 tareas,
-     * donde una sola tarea mueve el porcentaje 14 puntos.
+     * Tareas del propio mensajero a partir de las cuales su diferencia contra
+     * los pares cuenta completa. Con menos igual se le califica (hizo su
+     * trabajo y hay que medirlo), pero la diferencia se escala por
+     * tareas / MIN_TAREAS_MENSAJERO: con 6 tareas cuenta el 40%. Asi una
+     * tarea tarde entre 6 no lo hunde (antes, con 7 tareas, alguien quedaba
+     * "Bajo") y la nota no salta al cruzar el minimo.
      */
     public static final int MIN_TAREAS_MENSAJERO = 15;
 
@@ -124,13 +127,15 @@ public final class BaselinePares {
             Area area,
             /** Tareas del mensajero que entraron al calculo del cumplimiento. */
             int tareasEvaluadas,
+            /** Menos de MIN_TAREAS_MENSAJERO: la nota es preliminar y esta acercada al promedio. */
+            boolean pocasTareas,
             /** % a tiempo del mensajero sobre esas mismas tareas. */
             Double cumplimientoReal,
             /** % que habria logrado un par promedio con su misma mezcla de trabajo. */
             Double cumplimientoEsperado,
-            /** real - esperado, en puntos porcentuales. */
+            /** real - esperado, en puntos porcentuales, sin escalar. */
             Double diferenciaVsPares,
-            /** Cumplimiento llevado a la escala de la flota: general + diferencia. */
+            /** Cumplimiento llevado a la escala de la flota: general + diferencia (escalada si son pocas). */
             Double cumplimientoAjustado,
             /** Tiempo de ejecucion esperado / real. 1.00 = ritmo de sus pares. */
             Double indiceEficiencia,
@@ -361,7 +366,7 @@ public final class BaselinePares {
         Double diferencia = null;
         Double ajustado = null;
         Double porcentajeGeneral = general.porcentajeATiempo();
-        if (evaluadas >= MIN_TAREAS_MENSAJERO) {
+        if (evaluadas > 0) {
             real = aTiempo * 100.0 / evaluadas;
             esperado = esperadoAcumulado * 100.0 / evaluadas;
             diferencia = real - esperado;
@@ -369,18 +374,25 @@ public final class BaselinePares {
             // tecnico promedio y un mensajero promedio sacan la misma nota y
             // los cortes 85/60 significan lo mismo en los dos rankings.
             if (porcentajeGeneral != null) {
-                ajustado = Math.max(0.0, Math.min(100.0, porcentajeGeneral + diferencia));
+                double contada = diferencia * peso(evaluadas);
+                ajustado = Math.max(0.0, Math.min(100.0, porcentajeGeneral + contada));
             }
         }
 
         Double eficiencia = null;
         // Con 0 minutos reales (cierres instantaneos) el cociente no dice nada
-        if (conEjecucion >= MIN_TAREAS_MENSAJERO && minutosReales > 0) {
-            eficiencia = minutosEsperados / minutosReales;
+        if (conEjecucion > 0 && minutosReales > 0) {
+            // Con pocas tareas se acerca a 1.00, el ritmo de sus pares
+            eficiencia = 1.0 + (minutosEsperados / minutosReales - 1.0) * peso(conEjecucion);
         }
 
-        return new Evaluacion(area, evaluadas, redondear(real), redondear(esperado), redondear(diferencia),
+        return new Evaluacion(area, evaluadas, evaluadas < MIN_TAREAS_MENSAJERO, redondear(real), redondear(esperado), redondear(diferencia),
                 redondear(ajustado), redondear(eficiencia), tareasPorVehiculo, tareasPorTipo, tareasPorNivel);
+    }
+
+    /** Cuanto cuenta su diferencia: proporcional a sus tareas hasta el minimo, completa desde ahi. */
+    private static double peso(int tareas) {
+        return Math.min(1.0, (double) tareas / MIN_TAREAS_MENSAJERO);
     }
 
     private record Comparacion(Nivel nivel, Acumulado flota, Acumulado propio) {
