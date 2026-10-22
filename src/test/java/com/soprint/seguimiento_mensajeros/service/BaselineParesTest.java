@@ -200,20 +200,28 @@ class BaselineParesTest {
     }
 
     @Test
-    @DisplayName("Con menos de 15 tareas propias no se da indice")
+    @DisplayName("Con menos de 15 tareas se califica igual, pero la diferencia cuenta en proporcion")
     void pocasTareasDelMensajero() {
         List<BaselinePares.Registro> r = new ArrayList<>();
-        tareas(r, 1, ENTREGA, TipoVehiculo.MOTO, 30, 27, 30L);
-        tareas(r, 10, ENTREGA, TipoVehiculo.MOTO, 14, 2, 30L);
-        tareas(r, 20, ENTREGA, TipoVehiculo.MOTO, 15, 2, 30L);
+        tareas(r, 1, ENTREGA, TipoVehiculo.MOTO, 60, 54, 30L);
+        tareas(r, 10, ENTREGA, TipoVehiculo.MOTO, 6, 4, 60L);   // 66.7%: 2 tarde de 6
+        tareas(r, 20, ENTREGA, TipoVehiculo.MOTO, 15, 10, 30L); // 66.7% con 15
 
         BaselinePares b = new BaselinePares(r);
-        BaselinePares.Evaluacion e = b.evaluar(10L);
+        // General: 68 de 81 = 83.95%
+        BaselinePares.Evaluacion pocas = b.evaluar(10L);
+        BaselinePares.Evaluacion completas = b.evaluar(20L);
 
-        assertEquals(14, e.tareasEvaluadas());
-        assertNull(e.cumplimientoAjustado());
-        assertNull(e.indiceEficiencia());
-        assertTrue(b.evaluar(20L).cumplimientoAjustado() != null, "con 15 ya se califica");
+        assertEquals(6, pocas.tareasEvaluadas());
+        assertTrue(pocas.pocasTareas());
+        assertFalse(completas.pocasTareas());
+        // Pares de 10: 64 de 75 = 85.33%. Diferencia -18.67; con 6 de 15 cuenta el 40%
+        assertEquals(-18.67, pocas.diferenciaVsPares(), DELTA);
+        assertEquals(83.95 - 18.67 * 0.4, pocas.cumplimientoAjustado(), DELTA);
+        // Pares de 20: 58 de 66 = 87.88%. Con 15 cuenta completa
+        assertEquals(83.95 - 21.21, completas.cumplimientoAjustado(), DELTA);
+        // Eficiencia 0.5 real, con el 40%: 1 - 0.5 * 0.4
+        assertEquals(0.8, pocas.indiceEficiencia(), DELTA);
     }
 
     @Test

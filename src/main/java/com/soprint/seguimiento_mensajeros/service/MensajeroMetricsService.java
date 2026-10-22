@@ -247,6 +247,7 @@ public class MensajeroMetricsService {
                         BaselinePares.Evaluacion evaluacion = baseline.evaluar(dto.getIdMensajero());
                         dto.setArea(evaluacion.area().name());
                         dto.setTareasEvaluadas(evaluacion.tareasEvaluadas());
+                        dto.setPocasTareas(evaluacion.pocasTareas());
                         dto.setCumplimientoEsperado(evaluacion.cumplimientoEsperado());
                         dto.setDiferenciaVsPares(evaluacion.diferenciaVsPares());
                         dto.setCumplimientoAjustado(evaluacion.cumplimientoAjustado());
