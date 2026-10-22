@@ -49,8 +49,8 @@ class BaselineParesTest {
         tareas(r, 2, ENTREGA, TipoVehiculo.MOTO, 20, 19, 30L);
         tareas(r, 3, ENTREGA, TipoVehiculo.MOTO, 20, 19, 30L);
         // Evaluados: tecnico 70% (sobre sus pares), mensajero 90% (bajo los suyos)
-        tareas(r, 10, GARANTIA, TipoVehiculo.AUTO, 10, 7, 180L);
-        tareas(r, 20, ENTREGA, TipoVehiculo.MOTO, 10, 9, 30L);
+        tareas(r, 10, GARANTIA, TipoVehiculo.AUTO, 20, 14, 180L);
+        tareas(r, 20, ENTREGA, TipoVehiculo.MOTO, 20, 18, 30L);
 
         BaselinePares b = new BaselinePares(r);
         BaselinePares.Evaluacion tecnico = b.evaluar(10L);
@@ -74,12 +74,12 @@ class BaselineParesTest {
         List<BaselinePares.Registro> r = new ArrayList<>();
         tareas(r, 1, ENTREGA, TipoVehiculo.CAMION, 25, 15, null);  // entregas en camion 60%
         tareas(r, 2, ENTREGA, TipoVehiculo.MOTO, 25, 24, null);    // entregas en moto 96%
-        tareas(r, 10, ENTREGA, TipoVehiculo.CAMION, 10, 7, null);
+        tareas(r, 10, ENTREGA, TipoVehiculo.CAMION, 20, 14, null);
 
         BaselinePares.Evaluacion e = new BaselinePares(r).evaluar(10L);
 
         assertEquals(60.0, e.cumplimientoEsperado(), DELTA);
-        assertEquals(10, e.tareasPorNivel().get(Nivel.TIPO_Y_VEHICULO));
+        assertEquals(20, e.tareasPorNivel().get(Nivel.TIPO_Y_VEHICULO));
     }
 
     @Test
@@ -88,13 +88,13 @@ class BaselineParesTest {
         List<BaselinePares.Registro> r = new ArrayList<>();
         tareas(r, 1, ENTREGA, TipoVehiculo.MOTO, 30, 27, null);    // 90%
         tareas(r, 2, GARANTIA, TipoVehiculo.AUTO, 20, 12, null);   // 60%
-        tareas(r, 10, GARANTIA, TipoVehiculo.AUTO, 10, 6, null);   // igual que sus pares
+        tareas(r, 10, GARANTIA, TipoVehiculo.AUTO, 20, 12, null);  // igual que sus pares
 
         BaselinePares b = new BaselinePares(r);
-        // General: 45 de 60 = 75%; diferencia 0 -> ajustado 75, no 60
-        assertEquals(75.0, b.getPorcentajeGeneral(), DELTA);
+        // General: 51 de 70 = 72.86%; diferencia 0 -> ajustado 72.86, no 60
+        assertEquals(72.86, b.getPorcentajeGeneral(), DELTA);
         assertEquals(0.0, b.evaluar(10L).diferenciaVsPares(), DELTA);
-        assertEquals(75.0, b.evaluar(10L).cumplimientoAjustado(), DELTA);
+        assertEquals(72.86, b.evaluar(10L).cumplimientoAjustado(), DELTA);
     }
 
     @Test
@@ -118,13 +118,13 @@ class BaselineParesTest {
     void caeAlAreaCuandoElTipoNoTieneOtros() {
         List<BaselinePares.Registro> r = new ArrayList<>();
         tareas(r, 1, GARANTIA, TipoVehiculo.AUTO, 20, 14, null);   // tecnica de otros: 70%
-        tareas(r, 10, RENTING, TipoVehiculo.CAMIONETA, 8, 6, null); // nadie mas hace renting
+        tareas(r, 10, RENTING, TipoVehiculo.CAMIONETA, 16, 12, null); // nadie mas hace renting
         tareas(r, 20, ENTREGA, TipoVehiculo.MOTO, 40, 40, null);   // logistica no se mezcla
 
         BaselinePares b = new BaselinePares(r);
         BaselinePares.Evaluacion e = b.evaluar(10L);
 
-        assertEquals(8, e.tareasPorNivel().get(Nivel.AREA));
+        assertEquals(16, e.tareasPorNivel().get(Nivel.AREA));
         assertEquals(70.0, e.cumplimientoEsperado(), DELTA);
         assertFalse(referencia(b, RENTING).suficiente());
     }
@@ -173,12 +173,12 @@ class BaselineParesTest {
         List<BaselinePares.Registro> r = new ArrayList<>();
         tareas(r, 1, ENTREGA, TipoVehiculo.MOTO, 20, 18, null);    // 90%
         tareas(r, 2, GARANTIA, TipoVehiculo.AUTO, 20, 10, null);   // 50%
-        tareas(r, 10, GARANTIA, TipoVehiculo.AUTO, 6, 3, null);
-        tareas(r, 10, ENTREGA, TipoVehiculo.MOTO, 4, 4, null);
+        tareas(r, 10, GARANTIA, TipoVehiculo.AUTO, 12, 6, null);
+        tareas(r, 10, ENTREGA, TipoVehiculo.MOTO, 8, 8, null);
 
         BaselinePares.Evaluacion e = new BaselinePares(r).evaluar(10L);
 
-        // (6 * 50 + 4 * 90) / 10 = 66
+        // (12 * 50 + 8 * 90) / 20 = 66
         assertEquals(66.0, e.cumplimientoEsperado(), DELTA);
         assertEquals(70.0, e.cumplimientoReal(), DELTA);
     }
@@ -200,16 +200,20 @@ class BaselineParesTest {
     }
 
     @Test
-    @DisplayName("Con menos de 5 tareas propias no se da indice")
+    @DisplayName("Con menos de 15 tareas propias no se da indice")
     void pocasTareasDelMensajero() {
         List<BaselinePares.Registro> r = new ArrayList<>();
         tareas(r, 1, ENTREGA, TipoVehiculo.MOTO, 30, 27, 30L);
-        tareas(r, 10, ENTREGA, TipoVehiculo.MOTO, 4, 4, 30L);
+        tareas(r, 10, ENTREGA, TipoVehiculo.MOTO, 14, 2, 30L);
+        tareas(r, 20, ENTREGA, TipoVehiculo.MOTO, 15, 2, 30L);
 
-        BaselinePares.Evaluacion e = new BaselinePares(r).evaluar(10L);
+        BaselinePares b = new BaselinePares(r);
+        BaselinePares.Evaluacion e = b.evaluar(10L);
 
-        assertEquals(4, e.tareasEvaluadas());
+        assertEquals(14, e.tareasEvaluadas());
         assertNull(e.cumplimientoAjustado());
+        assertNull(e.indiceEficiencia());
+        assertTrue(b.evaluar(20L).cumplimientoAjustado() != null, "con 15 ya se califica");
     }
 
     @Test
@@ -217,7 +221,7 @@ class BaselineParesTest {
     void tareasSinPlazo() {
         List<BaselinePares.Registro> r = new ArrayList<>();
         tareas(r, 1, ENTREGA, TipoVehiculo.AUTO, 20, 10, null);
-        tareas(r, 10, ENTREGA, TipoVehiculo.AUTO, 5, 5, null);
+        tareas(r, 10, ENTREGA, TipoVehiculo.AUTO, 15, 15, null);
         for (int i = 0; i < 10; i++) {
             r.add(new BaselinePares.Registro(10L, ENTREGA.id(), ENTREGA.nombre(), false, TipoVehiculo.AUTO,
                     null, null));
@@ -225,9 +229,9 @@ class BaselineParesTest {
 
         BaselinePares.Evaluacion e = new BaselinePares(r).evaluar(10L);
 
-        assertEquals(5, e.tareasEvaluadas());
+        assertEquals(15, e.tareasEvaluadas());
         assertEquals(100.0, e.cumplimientoReal(), DELTA);
-        assertEquals(15, e.tareasPorVehiculo().get(TipoVehiculo.AUTO));
+        assertEquals(25, e.tareasPorVehiculo().get(TipoVehiculo.AUTO));
     }
 
     @Test
@@ -236,7 +240,7 @@ class BaselineParesTest {
         List<BaselinePares.Registro> r = new ArrayList<>();
         tareas(r, 1, GARANTIA, TipoVehiculo.CAMIONETA, 20, 20, 180L);
         tareas(r, 2, ENTREGA, TipoVehiculo.CAMIONETA, 40, 40, 20L);   // no entra: otro tipo
-        tareas(r, 10, GARANTIA, TipoVehiculo.CAMIONETA, 5, 5, 120L);
+        tareas(r, 10, GARANTIA, TipoVehiculo.CAMIONETA, 15, 15, 120L);
 
         assertEquals(1.5, new BaselinePares(r).evaluar(10L).indiceEficiencia(), DELTA);
     }

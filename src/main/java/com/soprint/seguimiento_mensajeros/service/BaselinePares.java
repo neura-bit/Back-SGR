@@ -48,8 +48,12 @@ public final class BaselinePares {
     /** Tareas de otros mensajeros en una comparacion para confiar en su promedio. */
     public static final int MIN_TAREAS_FLOTA = 20;
 
-    /** Tareas del propio mensajero con referencia valida para darle un indice. */
-    public static final int MIN_TAREAS_MENSAJERO = 5;
+    /**
+     * Tareas del propio mensajero con referencia valida para darle un indice.
+     * Era 5; con septiembre 2026 eso calificaba "Bajo" a alguien con 7 tareas,
+     * donde una sola tarea mueve el porcentaje 14 puntos.
+     */
+    public static final int MIN_TAREAS_MENSAJERO = 15;
 
     public enum Area {
         LOGISTICA("Logística"),
