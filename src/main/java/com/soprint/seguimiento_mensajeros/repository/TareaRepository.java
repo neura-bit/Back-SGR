@@ -133,14 +133,16 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
             @Param("fechaFin") LocalDateTime fechaFin);
 
     // Promedios de tiempos por mensajero y rango de fechas
-    // Datos minimos para la evaluacion por vehiculo: una fila por tarea
-    // finalizada con vehiculo declarado (idMensajero, vehiculo, aTiempo, minutos)
-    @Query("SELECT t.mensajeroAsignado.idUsuario, t.tipoVehiculo, t.entregaATiempo, t.tiempoEjecucion " +
+    // Datos minimos para la evaluacion contra pares: una fila por tarea
+    // finalizada con vehiculo declarado (idMensajero, idTipo, nombreTipo,
+    // tipoTecnico, vehiculo, aTiempo, minutos)
+    @Query("SELECT t.mensajeroAsignado.idUsuario, t.tipoOperacion.idTipoOperacion, t.tipoOperacion.nombre, " +
+            "t.tipoOperacion.tecnico, t.tipoVehiculo, t.entregaATiempo, t.tiempoEjecucion " +
             "FROM Tarea t WHERE t.mensajeroAsignado.idUsuario IN :idsMensajeros " +
             "AND t.tipoVehiculo IS NOT NULL " +
             "AND t.fechaFin IS NOT NULL " +
             "AND t.fechaCreacion BETWEEN :fechaInicio AND :fechaFin")
-    List<Object[]> findDatosVehiculoByMensajerosAndFechas(
+    List<Object[]> findDatosEvaluacionByMensajerosAndFechas(
             @Param("idsMensajeros") List<Long> idsMensajeros,
             @Param("fechaInicio") LocalDateTime fechaInicio,
             @Param("fechaFin") LocalDateTime fechaFin);

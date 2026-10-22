@@ -43,6 +43,9 @@ public class TipoOperacionService implements ITipoOperacionService {
     public TipoOperacion create(TipoOperacion tipoOperacion) {
         tipoOperacion.setIdTipoOperacion(null); // generar ID
         tipoOperacion.setActivo(true);
+        if (tipoOperacion.getTecnico() == null) {
+            tipoOperacion.setTecnico(false);
+        }
         return tipoOperacionRepository.save(tipoOperacion);
     }
 
@@ -60,6 +63,9 @@ public class TipoOperacionService implements ITipoOperacionService {
         }
         if (existente.getActivo() == null) {
             existente.setActivo(true);   // filas anteriores a esta columna
+        }
+        if (tipoOperacion.getTecnico() != null) {
+            existente.setTecnico(tipoOperacion.getTecnico());
         }
 
         return tipoOperacionRepository.save(existente);

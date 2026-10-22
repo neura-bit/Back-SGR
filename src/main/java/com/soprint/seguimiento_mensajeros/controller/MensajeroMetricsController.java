@@ -3,7 +3,7 @@ package com.soprint.seguimiento_mensajeros.controller;
 import com.soprint.seguimiento_mensajeros.DTO.ComparacionMensualDTO;
 import com.soprint.seguimiento_mensajeros.DTO.ComparacionMensualGeneralDTO;
 import com.soprint.seguimiento_mensajeros.DTO.MensajeroMetricsDTO;
-import com.soprint.seguimiento_mensajeros.DTO.ReferenciaVehiculosDTO;
+import com.soprint.seguimiento_mensajeros.DTO.ReferenciaFlotaDTO;
 import com.soprint.seguimiento_mensajeros.service.MensajeroMetricsService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -128,20 +128,20 @@ public class MensajeroMetricsController {
     }
 
     /**
-     * Referencia de la flota por vehículo: la base contra la que se evalúa a
+     * Referencia de la flota por área y tipo de operación: la base contra la que se evalúa a
      * cada mensajero en el comparativo del mismo período y alcance.
      *
      * Ejemplo: GET
-     * /api/metricas/mensajeros/referencia-vehiculos?fechaInicio=2026-09-01&fechaFin=2026-09-30
+     * /api/metricas/mensajeros/referencia-flota?fechaInicio=2026-09-01&fechaFin=2026-09-30
      * y opcionalmente &idSucursal=2 para acotar a una sucursal.
      */
-    @GetMapping("/referencia-vehiculos")
+    @GetMapping("/referencia-flota")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
-    public ResponseEntity<ReferenciaVehiculosDTO> getReferenciaVehiculos(
+    public ResponseEntity<ReferenciaFlotaDTO> getReferenciaFlota(
             @RequestParam(required = false) Long idSucursal,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
-        return ResponseEntity.ok(metricsService.getReferenciaVehiculos(idSucursal, fechaInicio, fechaFin));
+        return ResponseEntity.ok(metricsService.getReferenciaFlota(idSucursal, fechaInicio, fechaFin));
     }
 
     // ===== ENDPOINT DE COMPARACIÓN MENSUAL =====

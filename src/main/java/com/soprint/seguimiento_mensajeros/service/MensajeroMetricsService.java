@@ -3,7 +3,7 @@ package com.soprint.seguimiento_mensajeros.service;
 import com.soprint.seguimiento_mensajeros.DTO.ComparacionMensualDTO;
 import com.soprint.seguimiento_mensajeros.DTO.ComparacionMensualGeneralDTO;
 import com.soprint.seguimiento_mensajeros.DTO.MensajeroMetricsDTO;
-import com.soprint.seguimiento_mensajeros.DTO.ReferenciaVehiculosDTO;
+import com.soprint.seguimiento_mensajeros.DTO.ReferenciaFlotaDTO;
 import com.soprint.seguimiento_mensajeros.model.TipoVehiculo;
 import com.soprint.seguimiento_mensajeros.model.Usuario;
 import com.soprint.seguimiento_mensajeros.repository.SucursalRepository;
@@ -42,11 +42,11 @@ public class MensajeroMetricsService {
 
         /**
          * Métricas de un mensajero, evaluado contra la flota de toda la empresa
-         * que usó sus mismos vehículos.
+         * que hizo su mismo tipo de trabajo.
          */
         public MensajeroMetricsDTO getMetricasMensajero(Long idMensajero, LocalDate fechaInicio, LocalDate fechaFin) {
                 MensajeroMetricsDTO dto = getMetricasCrudas(idMensajero, fechaInicio, fechaFin);
-                aplicarAjusteVehiculo(List.of(dto), usuarioRepository.findByRolNombre("MENSAJERO"), fechaInicio,
+                aplicarEvaluacion(List.of(dto), usuarioRepository.findByRolNombre("MENSAJERO"), fechaInicio,
                                 fechaFin);
                 return dto;
         }
@@ -59,14 +59,14 @@ public class MensajeroMetricsService {
         public MensajeroMetricsDTO getMetricasMensajeroEnSucursal(Long idSucursal, Long idMensajero,
                         LocalDate fechaInicio, LocalDate fechaFin) {
                 MensajeroMetricsDTO dto = getMetricasCrudas(idMensajero, fechaInicio, fechaFin);
-                aplicarAjusteVehiculo(List.of(dto),
+                aplicarEvaluacion(List.of(dto),
                                 usuarioRepository.findByRolNombreAndSucursalIdSucursal("MENSAJERO", idSucursal),
                                 fechaInicio, fechaFin);
                 return dto;
         }
 
         /**
-         * Métricas sin el ajuste por vehículo. Las usan las comparativas
+         * Métricas sin la comparación contra pares. Las usan las comparativas
          * mensuales y el resumen diario, que solo miran el cumplimiento crudo.
          */
         private MensajeroMetricsDTO getMetricasCrudas(Long idMensajero, LocalDate fechaInicio, LocalDate fechaFin) {
@@ -182,9 +182,9 @@ public class MensajeroMetricsService {
         private List<MensajeroMetricsDTO> calcularMetricasParaMensajeros(List<Usuario> mensajeros,
                         LocalDate fechaInicio, LocalDate fechaFin) {
                 List<MensajeroMetricsDTO> metricas = calcularMetricasCrudas(mensajeros, fechaInicio, fechaFin);
-                aplicarAjusteVehiculo(metricas, mensajeros, fechaInicio, fechaFin);
+                aplicarEvaluacion(metricas, mensajeros, fechaInicio, fechaFin);
 
-                // El ranking va por el cumplimiento ajustado por vehículo. Quien no
+                // El ranking va por el cumplimiento ajustado contra sus pares. Quien no
                 // tiene base suficiente queda al final, ordenado por el crudo.
                 metricas.sort(Comparator
                                 .comparing(MensajeroMetricsDTO::getCumplimientoAjustado,
@@ -215,34 +215,38 @@ public class MensajeroMetricsService {
         }
 
         /**
-         * Construye la referencia por vehículo con las tareas finalizadas de la
+         * Construye la referencia contra pares con las tareas finalizadas de la
          * flota del alcance.
          */
-        private BaselineVehiculos construirBaseline(List<Usuario> flota, LocalDate fechaInicio, LocalDate fechaFin) {
+        private BaselinePares construirBaseline(List<Usuario> flota, LocalDate fechaInicio, LocalDate fechaFin) {
                 List<Long> ids = flota.stream().map(Usuario::getIdUsuario).toList();
                 if (ids.isEmpty()) {
-                        return new BaselineVehiculos(List.of());
+                        return new BaselinePares(List.of());
                 }
-                List<BaselineVehiculos.Registro> registros = tareaRepository
-                                .findDatosVehiculoByMensajerosAndFechas(ids, fechaInicio.atStartOfDay(),
+                List<BaselinePares.Registro> registros = tareaRepository
+                                .findDatosEvaluacionByMensajerosAndFechas(ids, fechaInicio.atStartOfDay(),
                                                 fechaFin.atTime(LocalTime.MAX))
                                 .stream()
-                                .map(fila -> new BaselineVehiculos.Registro(
+                                .map(fila -> new BaselinePares.Registro(
                                                 (Long) fila[0],
-                                                (TipoVehiculo) fila[1],
-                                                (Boolean) fila[2],
-                                                (Long) fila[3]))
+                                                (Long) fila[1],
+                                                (String) fila[2],
+                                                Boolean.TRUE.equals(fila[3]),
+                                                (TipoVehiculo) fila[4],
+                                                (Boolean) fila[5],
+                                                (Long) fila[6]))
                                 .toList();
-                return new BaselineVehiculos(registros);
+                return new BaselinePares(registros);
         }
 
-        /** Completa en cada DTO los campos de la evaluación por vehículo. */
-        private void aplicarAjusteVehiculo(List<MensajeroMetricsDTO> metricas, List<Usuario> flota,
+        /** Completa en cada DTO los campos de la evaluación contra sus pares. */
+        private void aplicarEvaluacion(List<MensajeroMetricsDTO> metricas, List<Usuario> flota,
                         LocalDate fechaInicio, LocalDate fechaFin) {
-                BaselineVehiculos baseline = construirBaseline(flota, fechaInicio, fechaFin);
+                BaselinePares baseline = construirBaseline(flota, fechaInicio, fechaFin);
                 for (MensajeroMetricsDTO dto : metricas) {
-                        BaselineVehiculos.Evaluacion evaluacion = baseline.evaluar(dto.getIdMensajero());
-                        dto.setTareasEvaluadasVehiculo(evaluacion.tareasEvaluadas());
+                        BaselinePares.Evaluacion evaluacion = baseline.evaluar(dto.getIdMensajero());
+                        dto.setArea(evaluacion.area().name());
+                        dto.setTareasEvaluadas(evaluacion.tareasEvaluadas());
                         dto.setCumplimientoEsperado(evaluacion.cumplimientoEsperado());
                         dto.setDiferenciaVsPares(evaluacion.diferenciaVsPares());
                         dto.setCumplimientoAjustado(evaluacion.cumplimientoAjustado());
@@ -251,36 +255,59 @@ public class MensajeroMetricsService {
                         Map<String, Integer> porVehiculo = new LinkedHashMap<>();
                         evaluacion.tareasPorVehiculo().forEach((v, n) -> porVehiculo.put(v.getEtiqueta(), n));
                         dto.setTareasPorVehiculo(porVehiculo);
+                        dto.setTareasPorTipo(evaluacion.tareasPorTipo());
+
+                        Map<String, Integer> porNivel = new LinkedHashMap<>();
+                        evaluacion.tareasPorNivel().forEach((nivel, n) -> porNivel.put(nivel.getEtiqueta(), n));
+                        dto.setTareasPorNivel(porNivel);
                 }
         }
 
         /**
-         * Tabla "Referencia de la flota por vehículo": lo que logró la flota con
-         * cada vehículo. Sin idSucursal es toda la empresa.
+         * Tabla "Referencia de la flota": lo que logró la flota en cada área y
+         * tipo de operación, con el detalle por vehículo. Sin idSucursal es toda
+         * la empresa.
          */
-        public ReferenciaVehiculosDTO getReferenciaVehiculos(Long idSucursal, LocalDate fechaInicio,
-                        LocalDate fechaFin) {
+        public ReferenciaFlotaDTO getReferenciaFlota(Long idSucursal, LocalDate fechaInicio, LocalDate fechaFin) {
                 List<Usuario> flota = idSucursal != null
                                 ? usuarioRepository.findByRolNombreAndSucursalIdSucursal("MENSAJERO", idSucursal)
                                 : usuarioRepository.findByRolNombre("MENSAJERO");
-                BaselineVehiculos baseline = construirBaseline(flota, fechaInicio, fechaFin);
+                BaselinePares baseline = construirBaseline(flota, fechaInicio, fechaFin);
 
-                ReferenciaVehiculosDTO dto = new ReferenciaVehiculosDTO();
+                ReferenciaFlotaDTO dto = new ReferenciaFlotaDTO();
                 dto.setIdSucursal(idSucursal);
                 dto.setFechaInicio(fechaInicio);
                 dto.setFechaFin(fechaFin);
                 dto.setPorcentajeGeneral(baseline.getPorcentajeGeneral());
-                dto.setMinTareasFlota(BaselineVehiculos.MIN_TAREAS_FLOTA);
-                dto.setMinTareasMensajero(BaselineVehiculos.MIN_TAREAS_MENSAJERO);
-                dto.setVehiculos(baseline.referencias().stream()
-                                .map(r -> new ReferenciaVehiculosDTO.Fila(
-                                                r.vehiculo().name(),
-                                                r.vehiculo().getEtiqueta(),
-                                                r.tareas(),
-                                                r.mensajeros(),
-                                                r.porcentajeATiempo(),
-                                                r.minutosEjecucionPromedio(),
-                                                r.suficiente()))
+                dto.setMinTareasFlota(BaselinePares.MIN_TAREAS_FLOTA);
+                dto.setMinTareasMensajero(BaselinePares.MIN_TAREAS_MENSAJERO);
+                dto.setAreas(baseline.referenciasPorArea().stream()
+                                .map(a -> new ReferenciaFlotaDTO.Area(
+                                                a.area().name(),
+                                                a.area().getEtiqueta(),
+                                                a.tareas(),
+                                                a.mensajeros(),
+                                                a.porcentajeATiempo(),
+                                                a.minutosEjecucionPromedio()))
+                                .toList());
+                dto.setTipos(baseline.referenciasPorTipo().stream()
+                                .map(t -> new ReferenciaFlotaDTO.Tipo(
+                                                t.idTipoOperacion(),
+                                                t.nombre(),
+                                                t.area().name(),
+                                                t.tareas(),
+                                                t.mensajeros(),
+                                                t.porcentajeATiempo(),
+                                                t.minutosEjecucionPromedio(),
+                                                t.suficiente(),
+                                                t.vehiculos().stream()
+                                                                .map(v -> new ReferenciaFlotaDTO.Vehiculo(
+                                                                                v.vehiculo().name(),
+                                                                                v.vehiculo().getEtiqueta(),
+                                                                                v.tareas(),
+                                                                                v.porcentajeATiempo(),
+                                                                                v.suficiente()))
+                                                                .toList()))
                                 .toList());
                 return dto;
         }
