@@ -30,6 +30,24 @@ public class TipoOperacion {
     @Column(name = "activo", columnDefinition = "boolean default true")
     private Boolean activo;
 
+    /**
+     * Trabajo del area tecnica (garantias, servicio tecnico, renting). La
+     * evaluacion de mensajeros compara estas tareas contra otras tecnicas y
+     * arma con ellas un ranking aparte. Es un dato y no una lista en el
+     * codigo porque los tipos se crean desde la pantalla de administracion.
+     * Mismo criterio de null que activo.
+     */
+    @Column(name = "tecnico", columnDefinition = "boolean default false")
+    private Boolean tecnico;
+
+    public Boolean getTecnico() {
+        return tecnico;
+    }
+
+    public void setTecnico(Boolean tecnico) {
+        this.tecnico = tecnico;
+    }
+
     public Boolean getActivo() {
         return activo;
     }

@@ -32,15 +32,21 @@ public class MensajeroMetricsDTO {
     // Porcentaje de tareas completadas
     private Double porcentajeCompletado;
 
-    // Evaluacion ajustada por vehiculo (ver BaselineVehiculos). Quedan en null
-    // cuando no hay base suficiente para compararlo contra sus pares.
-    private Integer tareasEvaluadasVehiculo;
+    // Evaluacion contra pares con el mismo tipo de trabajo (ver BaselinePares).
+    // Quedan en null cuando no hay base suficiente para compararlo.
+    // LOGISTICA o TECNICA: el ranking en el que aparece
+    private String area;
+    private Integer tareasEvaluadas;
     private Double cumplimientoEsperado;
     private Double diferenciaVsPares;
     private Double cumplimientoAjustado;
     private Double indiceEficiencia;
     // Etiqueta del vehiculo -> tareas finalizadas con el
     private Map<String, Integer> tareasPorVehiculo;
+    // Nombre del tipo de operacion -> tareas finalizadas de ese tipo
+    private Map<String, Integer> tareasPorTipo;
+    // Contra que se comparo: "Mismo tipo y vehículo" / "Mismo tipo" / "Misma área" -> tareas
+    private Map<String, Integer> tareasPorNivel;
 
     // Constructor vacío
     public MensajeroMetricsDTO() {
@@ -189,12 +195,20 @@ public class MensajeroMetricsDTO {
     public void setPorcentajeCompletado(Double porcentajeCompletado) {
         this.porcentajeCompletado = porcentajeCompletado;
     }
-    public Integer getTareasEvaluadasVehiculo() {
-        return tareasEvaluadasVehiculo;
+    public String getArea() {
+        return area;
     }
 
-    public void setTareasEvaluadasVehiculo(Integer tareasEvaluadasVehiculo) {
-        this.tareasEvaluadasVehiculo = tareasEvaluadasVehiculo;
+    public void setArea(String area) {
+        this.area = area;
+    }
+
+    public Integer getTareasEvaluadas() {
+        return tareasEvaluadas;
+    }
+
+    public void setTareasEvaluadas(Integer tareasEvaluadas) {
+        this.tareasEvaluadas = tareasEvaluadas;
     }
 
     public Double getCumplimientoEsperado() {
@@ -235,5 +249,21 @@ public class MensajeroMetricsDTO {
 
     public void setTareasPorVehiculo(Map<String, Integer> tareasPorVehiculo) {
         this.tareasPorVehiculo = tareasPorVehiculo;
+    }
+
+    public Map<String, Integer> getTareasPorTipo() {
+        return tareasPorTipo;
+    }
+
+    public void setTareasPorTipo(Map<String, Integer> tareasPorTipo) {
+        this.tareasPorTipo = tareasPorTipo;
+    }
+
+    public Map<String, Integer> getTareasPorNivel() {
+        return tareasPorNivel;
+    }
+
+    public void setTareasPorNivel(Map<String, Integer> tareasPorNivel) {
+        this.tareasPorNivel = tareasPorNivel;
     }
 }
