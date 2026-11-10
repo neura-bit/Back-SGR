@@ -77,6 +77,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/roles/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/sucursales/ciudades")
                         .hasAnyRole("ADMIN", "ASESOR", "SUPERVISOR")
+                        // Listado de sucursales: lo usa el filtro de Rendimiento. VER_RENDIMIENTO
+                        // solo se le da a supervisores habilitados (CustomUserDetailsService).
+                        .requestMatchers(HttpMethod.GET, "/api/sucursales")
+                        .hasAnyAuthority("ROLE_ADMIN", "VER_RENDIMIENTO")
                         .requestMatchers("/api/sucursales/**").hasRole("ADMIN")
                         .requestMatchers("/api/categorias/**").hasAnyRole("ADMIN", "ASESOR", "SUPERVISOR")
                         .requestMatchers("/api/estados-tarea/**").hasRole("ADMIN")

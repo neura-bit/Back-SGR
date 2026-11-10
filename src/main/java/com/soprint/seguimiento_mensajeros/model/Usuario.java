@@ -31,6 +31,14 @@ public class Usuario {
     @Column(name = "fcm_token", length = 500)
     public String fcmToken;
 
+    /**
+     * Permiso extra para supervisores: si es true, el supervisor puede ver la sección
+     * Rendimiento (todos los mensajeros). Null o false = sin permiso. Solo tiene efecto
+     * con rol SUPERVISOR; para otros roles se guarda siempre en false.
+     */
+    @Column(name = "ver_rendimiento")
+    public Boolean verRendimiento;
+
     public Long getIdUsuario() {
         return idUsuario;
     }
@@ -133,6 +141,20 @@ public class Usuario {
 
     public void setFcmToken(String fcmToken) {
         this.fcmToken = fcmToken;
+    }
+
+    public Boolean getVerRendimiento() {
+        return verRendimiento;
+    }
+
+    public void setVerRendimiento(Boolean verRendimiento) {
+        this.verRendimiento = verRendimiento;
+    }
+
+    /** True solo para un supervisor habilitado a ver Rendimiento. */
+    public boolean puedeVerRendimiento() {
+        return Boolean.TRUE.equals(verRendimiento)
+                && rol != null && "SUPERVISOR".equalsIgnoreCase(rol.getNombre());
     }
 
     public Usuario(Long idUsuario, String nombre, String apellido, String telefono, String username, String password,

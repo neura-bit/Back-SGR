@@ -91,9 +91,9 @@ public class IncidenciaTareaController {
                 .collect(Collectors.toList()));
     }
 
-    // GET /api/incidencias-tarea?fechaInicio=...&fechaFin=... - histórico
+    // GET /api/incidencias-tarea?fechaInicio=...&fechaFin=... - histórico (admin y supervisores con permiso de Rendimiento)
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('SUPERVISOR') and hasAuthority('VER_RENDIMIENTO'))")
     public ResponseEntity<List<IncidenciaTareaResponse>> listarPorFechas(
             @RequestParam String fechaInicio,
             @RequestParam String fechaFin) {

@@ -47,9 +47,9 @@ public class IncidenciaController {
         }
     }
 
-    // GET /api/incidencias?fechaInicio=...&fechaFin=... - solo administradores
+    // GET /api/incidencias?fechaInicio=...&fechaFin=... - admin y supervisores con permiso de Rendimiento
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('SUPERVISOR') and hasAuthority('VER_RENDIMIENTO'))")
     public ResponseEntity<List<IncidenciaResponse>> listarPorFechas(
             @RequestParam String fechaInicio,
             @RequestParam String fechaFin) {

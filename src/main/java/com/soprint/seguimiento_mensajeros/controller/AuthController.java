@@ -83,6 +83,7 @@ public class AuthController {
                 usuario.getIdUsuario(),
                 jwtService.getExpirationTime(),
                 usuario.getFotoPerfil());
+        response.setVerRendimiento(usuario.puedeVerRendimiento());
 
         return ResponseEntity.ok(response);
     }
@@ -110,7 +111,8 @@ public class AuthController {
                     "correo", usuario.getCorreo() != null ? usuario.getCorreo() : "",
                     "rol", usuario.getRol() != null ? usuario.getRol().getNombre() : "USER",
                     "sucursal", usuario.getSucursal() != null ? usuario.getSucursal().getNombre() : null,
-                    "fotoPerfil", usuario.getFotoPerfil() != null ? usuario.getFotoPerfil() : ""));
+                    "fotoPerfil", usuario.getFotoPerfil() != null ? usuario.getFotoPerfil() : "",
+                    "verRendimiento", usuario.puedeVerRendimiento()));
         } catch (Exception e) {
             return ResponseEntity.status(401).body(Map.of("error", "Token inválido"));
         }

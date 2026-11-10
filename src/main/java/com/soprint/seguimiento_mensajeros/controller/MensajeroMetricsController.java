@@ -21,6 +21,13 @@ import java.util.List;
 @RequestMapping("/api/metricas/mensajeros")
 public class MensajeroMetricsController {
 
+    /**
+     * Quién ve Rendimiento: el admin, y solo los supervisores a los que se les dio el
+     * permiso en Usuarios (ver CustomUserDetailsService.PERMISO_VER_RENDIMIENTO).
+     */
+    static final String VER_RENDIMIENTO =
+            "hasRole('ADMIN') or (hasRole('SUPERVISOR') and hasAuthority('VER_RENDIMIENTO'))";
+
     private final MensajeroMetricsService metricsService;
 
     public MensajeroMetricsController(MensajeroMetricsService metricsService) {
@@ -34,7 +41,7 @@ public class MensajeroMetricsController {
      * /api/metricas/mensajeros/1?fechaInicio=2024-01-01&fechaFin=2024-01-31
      */
     @GetMapping("/{idMensajero}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
+    @PreAuthorize(VER_RENDIMIENTO)
     public ResponseEntity<MensajeroMetricsDTO> getMetricasMensajero(
             @PathVariable Long idMensajero,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
@@ -53,7 +60,7 @@ public class MensajeroMetricsController {
      * Ejemplo: GET /api/metricas/mensajeros/1/dia/2024-01-15
      */
     @GetMapping("/{idMensajero}/dia/{fecha}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR', 'MENSAJERO')")
+    @PreAuthorize("hasRole('MENSAJERO') or " + VER_RENDIMIENTO)
     public ResponseEntity<MensajeroMetricsDTO> getResumenDiario(
             @PathVariable Long idMensajero,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
@@ -72,7 +79,7 @@ public class MensajeroMetricsController {
      * /api/metricas/mensajeros/comparativo?fechaInicio=2024-01-01&fechaFin=2024-01-31
      */
     @GetMapping("/comparativo")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
+    @PreAuthorize(VER_RENDIMIENTO)
     public ResponseEntity<List<MensajeroMetricsDTO>> getComparativoMensajeros(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
@@ -90,7 +97,7 @@ public class MensajeroMetricsController {
      * /api/metricas/mensajeros/sucursal/1/mensajero/5?fechaInicio=2024-01-01&fechaFin=2024-01-31
      */
     @GetMapping("/sucursal/{idSucursal}/mensajero/{idMensajero}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
+    @PreAuthorize(VER_RENDIMIENTO)
     public ResponseEntity<MensajeroMetricsDTO> getMetricasMensajeroPorSucursal(
             @PathVariable Long idSucursal,
             @PathVariable Long idMensajero,
@@ -117,7 +124,7 @@ public class MensajeroMetricsController {
      * /api/metricas/mensajeros/sucursal/1/comparativo?fechaInicio=2024-01-01&fechaFin=2024-01-31
      */
     @GetMapping("/sucursal/{idSucursal}/comparativo")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
+    @PreAuthorize(VER_RENDIMIENTO)
     public ResponseEntity<List<MensajeroMetricsDTO>> getComparativoMensajerosPorSucursal(
             @PathVariable Long idSucursal,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
@@ -136,7 +143,7 @@ public class MensajeroMetricsController {
      * y opcionalmente &idSucursal=2 para acotar a una sucursal.
      */
     @GetMapping("/referencia-flota")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
+    @PreAuthorize(VER_RENDIMIENTO)
     public ResponseEntity<ReferenciaFlotaDTO> getReferenciaFlota(
             @RequestParam(required = false) Long idSucursal,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
@@ -154,7 +161,7 @@ public class MensajeroMetricsController {
      * /api/metricas/mensajeros/1/comparacion-mensual?mesInicio=2024-01&mesFin=2024-03
      */
     @GetMapping("/{idMensajero}/comparacion-mensual")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
+    @PreAuthorize(VER_RENDIMIENTO)
     public ResponseEntity<ComparacionMensualDTO> getComparacionMensual(
             @PathVariable Long idMensajero,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth mesInicio,
@@ -179,7 +186,7 @@ public class MensajeroMetricsController {
      * y opcionalmente &idSucursal=2 para acotar a una sucursal.
      */
     @GetMapping("/comparacion-mensual-general")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERVISOR')")
+    @PreAuthorize(VER_RENDIMIENTO)
     public ResponseEntity<ComparacionMensualGeneralDTO> getComparacionMensualGeneral(
             @RequestParam(required = false) Long idSucursal,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth mesInicio,

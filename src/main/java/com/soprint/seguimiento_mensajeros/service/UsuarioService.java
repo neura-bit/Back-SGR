@@ -6,6 +6,8 @@ import com.soprint.seguimiento_mensajeros.model.Usuario;
 import com.soprint.seguimiento_mensajeros.repository.RolRepository;
 import com.soprint.seguimiento_mensajeros.repository.SucursalRepository;
 import com.soprint.seguimiento_mensajeros.repository.UsuarioRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,6 +79,9 @@ public class UsuarioService implements IUsuarioService {
             usuario.password = passwordEncoder.encode(usuario.password);
         }
 
+        // Solo el admin da el permiso de Rendimiento.
+        usuario.verRendimiento = esAdminActual() && usuario.puedeVerRendimiento();
+
         return usuarioRepository.save(usuario);
     }
 
@@ -115,7 +120,22 @@ public class UsuarioService implements IUsuarioService {
             existente.password = passwordEncoder.encode(usuario.password);
         }
 
+        // Si no viene en el payload (activar/desactivar, app móvil) se conserva el valor.
+        // Solo el admin puede cambiarlo: la API de usuarios también la usan supervisores y
+        // asesores, y sin esto un supervisor podría darse el permiso a sí mismo.
+        if (usuario.verRendimiento != null && esAdminActual()) {
+            existente.verRendimiento = usuario.verRendimiento;
+        }
+        // El permiso solo vale para supervisores: si cambia de rol, se apaga.
+        existente.verRendimiento = existente.puedeVerRendimiento();
+
         return usuarioRepository.save(existente);
+    }
+
+    private boolean esAdminActual() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
     }
 
     @Override

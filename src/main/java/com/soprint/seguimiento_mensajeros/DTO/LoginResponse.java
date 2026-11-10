@@ -91,6 +91,17 @@ public class LoginResponse {
         this.correo = correo;
     }
 
+    /** Supervisor habilitado para ver Rendimiento. El front lo usa para mostrar el menú. */
+    private boolean verRendimiento;
+
+    public boolean isVerRendimiento() {
+        return verRendimiento;
+    }
+
+    public void setVerRendimiento(boolean verRendimiento) {
+        this.verRendimiento = verRendimiento;
+    }
+
     public String getFotoPerfil() {
         return fotoPerfil;
     }

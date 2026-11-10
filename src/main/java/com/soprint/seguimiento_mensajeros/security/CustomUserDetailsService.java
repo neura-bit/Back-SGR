@@ -9,11 +9,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
+
+    /** Permiso extra que se suma al rol de un supervisor habilitado para Rendimiento. */
+    public static final String PERMISO_VER_RENDIMIENTO = "VER_RENDIMIENTO";
 
     private final UsuarioRepository usuarioRepository;
 
@@ -34,8 +37,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         // Get role name from the related Rol entity
         String roleName = usuario.getRol() != null ? usuario.getRol().getNombre() : "USER";
 
-        List<SimpleGrantedAuthority> authorities = Collections.singletonList(
-                new SimpleGrantedAuthority("ROLE_" + roleName));
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + roleName));
+        // Se lee de la BD en cada request: dar o quitar el permiso aplica al instante en la API.
+        if (usuario.puedeVerRendimiento()) {
+            authorities.add(new SimpleGrantedAuthority(PERMISO_VER_RENDIMIENTO));
+        }
 
         return new User(
                 usuario.getUsername(),
