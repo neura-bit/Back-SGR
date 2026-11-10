@@ -170,4 +170,21 @@ public interface TareaRepository extends JpaRepository<Tarea, Long> {
             @Param("idMensajero") Long idMensajero,
             @Param("fechaInicio") LocalDateTime fechaInicio,
             @Param("fechaFin") LocalDateTime fechaFin);
+
+    /**
+     * Tareas que entran en el recorrido de un mensajero: las que tienen posiciones
+     * registradas en el rango (ids) o las que inició o terminó en ese rango.
+     * El JOIN FETCH del cliente es necesario porque open-in-view está en false en producción.
+     */
+    @Query("SELECT DISTINCT t FROM Tarea t " +
+            "JOIN FETCH t.cliente c " +
+            "LEFT JOIN FETCH t.tipoOperacion op " +
+            "WHERE t.idTarea IN :ids " +
+            "OR (t.mensajeroAsignado.idUsuario = :idMensajero AND (" +
+            "    (t.fechaInicio >= :desde AND t.fechaInicio < :hasta) " +
+            " OR (t.fechaFin >= :desde AND t.fechaFin < :hasta)))")
+    List<Tarea> buscarParaRecorrido(@Param("idMensajero") Long idMensajero,
+            @Param("ids") java.util.Collection<Long> ids,
+            @Param("desde") LocalDateTime desde,
+            @Param("hasta") LocalDateTime hasta);
 }

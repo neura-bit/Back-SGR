@@ -6,7 +6,11 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "posicion_tarea_historico")
+// Índice para el recorrido del día: busca por mensajero y rango de fechas. Sin él, cada
+// consulta recorre la tabla completa (cientos de miles de filas y creciendo).
+@Table(name = "posicion_tarea_historico", indexes = {
+        @Index(name = "idx_pos_hist_mensajero_fecha", columnList = "id_mensajero, fecha_registro")
+})
 @Builder
 public class PosicionTareaHistorico {
 
